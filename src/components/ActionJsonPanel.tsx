@@ -1,12 +1,12 @@
 import { Clipboard } from "lucide-react";
-import type { DrawingAction } from "../drawing/types";
+import type { DrawingInput } from "../drawing/types";
 
 type Props = {
-  actions: DrawingAction[];
+  input: DrawingInput;
 };
 
-export function ActionJsonPanel({ actions }: Props) {
-  const json = JSON.stringify(actions, null, 2);
+export function ActionJsonPanel({ input }: Props) {
+  const json = JSON.stringify(input, null, 2);
 
   const copyJson = async () => {
     await navigator.clipboard?.writeText(json);

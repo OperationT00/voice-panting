@@ -74,6 +74,21 @@ export type DrawingAction =
   | { type: "export" }
   | { type: "error"; message: string };
 
+export type DrawingPlanStep = {
+  id: string;
+  title: string;
+  action: DrawingAction;
+  dependsOn?: string[];
+};
+
+export type DrawingPlan = {
+  type: "plan";
+  title: string;
+  steps: DrawingPlanStep[];
+};
+
+export type DrawingInput = DrawingAction[] | DrawingPlan;
+
 export type DrawableShape = {
   id: string;
   kind: ShapeKind;

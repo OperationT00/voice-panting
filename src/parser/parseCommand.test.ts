@@ -156,4 +156,44 @@ describe("parseCommand", () => {
       }
     ]);
   });
+
+  it("parses a complex scene command into an ordered drawing plan", () => {
+    expect(parseCommand("画一幅小房子")).toEqual({
+      type: "plan",
+      title: "画一幅小房子",
+      steps: [
+        {
+          id: "house-body",
+          title: "画房身",
+          action: {
+            type: "create",
+            shape: "rect",
+            count: 1,
+            props: { color: "#f97316", size: "large", position: { x: 500, y: 340 } }
+          }
+        },
+        {
+          id: "house-roof",
+          title: "画屋顶",
+          dependsOn: ["house-body"],
+          action: {
+            type: "create",
+            shape: "triangle",
+            count: 1,
+            props: { color: "#ef4444", size: "large", position: { x: 500, y: 230 } }
+          }
+        },
+        {
+          id: "sun",
+          title: "画太阳",
+          action: {
+            type: "create",
+            shape: "circle",
+            count: 1,
+            props: { color: "#eab308", size: "medium", position: { x: 830, y: 110 } }
+          }
+        }
+      ]
+    });
+  });
 });

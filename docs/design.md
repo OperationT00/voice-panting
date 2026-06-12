@@ -25,7 +25,7 @@
 
 - 暂未支持“第二个圆”“最大的矩形”“所有红色图形”等复杂目标引用。
 - 暂未接入大模型解析自由自然语言。
-- 暂未支持复杂组合图案模板，如“一座房子”“一个太阳”。
+- 暂未支持更复杂的组合图案模板，如完整场景、流程图、带文字标注的图示。
 
 原因说明：本 MVP 优先保证三天内可运行、可演示、低成本。复杂目标引用和自由自然语言解析会显著增加状态查询、语义解析和错误恢复成本，适合作为后续增强。
 
@@ -208,3 +208,56 @@ SVG 图形使用数组顺序决定绘制顺序。数组中越靠后的图形越�
 3. 增加组合模板：太阳、房子、流程图。
 4. 增加 LLM fallback：把复杂自然语言解析成 DrawingAction JSON，并做 schema 校验。
 5. 增加 PNG 导出：将 SVG 转成 Canvas 后下载 PNG。
+
+## DrawingPlan 规划层
+
+复杂指令会先进入 `DrawingPlan`，再由 `prepareActions` 展开成有序 `DrawingAction[]`。这对应 Plan-and-Execute 思路：planner 负责把用户目标拆成多步计划，executor 负责按步骤调用工具。当前 executor 就是现有的 `validateAction`、`drawingReducer` 和 SVG 渲染链路。
+
+`DrawingPlan` 结构：
+
+```json
+{
+  "type": "plan",
+  "title": "画一幅小房子",
+  "steps": [
+    {
+      "id": "house-body",
+      "title": "画房身",
+      "action": {
+        "type": "create",
+        "shape": "rect",
+        "count": 1,
+        "props": {
+          "color": "#f97316",
+          "size": "large",
+          "position": { "x": 500, "y": 340 }
+        }
+      }
+    },
+    {
+      "id": "house-roof",
+      "title": "画屋顶",
+      "dependsOn": ["house-body"],
+      "action": {
+        "type": "create",
+        "shape": "triangle",
+        "count": 1,
+        "props": {
+          "color": "#ef4444",
+          "size": "large",
+          "position": { "x": 500, "y": 230 }
+        }
+      }
+    }
+  ]
+}
+```
+
+校验策略：
+
+- `steps` 数量限制为 1 到 20，避免一次生成过大的绘制任务。
+- `id` 必须唯一，便于后续模板沉淀、步骤复用和调试。
+- `dependsOn` 只能引用前面已经出现过的步骤，保证计划顺序就是可执行顺序。
+- 每一步的 `action` 仍然走 `validateAction`，继续复用颜色、坐标、数量、目标引用等安全边界。
+
+当前本地规则解析器已经支持“画一幅小房子”作为示例计划。后续接入 LLM 时，只需要让模型输出同样的 `DrawingPlan` JSON；前端仍负责校验、展开、执行和展示，不把模型输出直接作用到 SVG DOM。

@@ -1,4 +1,4 @@
-import type { CoordinatePosition, DrawingAction, ShapeKind, ShapePosition, ShapeSize, TargetRef } from "../drawing/types";
+import type { CoordinatePosition, DrawingInput, ShapeKind, ShapePosition, ShapeSize, TargetRef } from "../drawing/types";
 
 const colors: Array<[string, string]> = [
   ["紫", "#9333ea"],
@@ -32,7 +32,7 @@ const numberWords: Record<string, number> = {
   五: 5
 };
 
-export function parseCommand(rawText: string): DrawingAction[] {
+export function parseCommand(rawText: string): DrawingInput {
   const text = normalizeText(rawText);
 
   if (/撤销|上一步|退回/.test(text)) {
@@ -49,6 +49,10 @@ export function parseCommand(rawText: string): DrawingAction[] {
 
   if (/导出|保存/.test(text)) {
     return [{ type: "export" }];
+  }
+
+  if (/小房子|房子|小屋/.test(text)) {
+    return createHousePlan();
   }
 
   if (/删除/.test(text)) {
@@ -98,6 +102,46 @@ export function parseCommand(rawText: string): DrawingAction[] {
   }
 
   return [{ type: "error", message: "没听懂图形或操作，请换一种说法" }];
+}
+
+function createHousePlan(): DrawingInput {
+  return {
+    type: "plan",
+    title: "画一幅小房子",
+    steps: [
+      {
+        id: "house-body",
+        title: "画房身",
+        action: {
+          type: "create",
+          shape: "rect",
+          count: 1,
+          props: { color: "#f97316", size: "large", position: { x: 500, y: 340 } }
+        }
+      },
+      {
+        id: "house-roof",
+        title: "画屋顶",
+        dependsOn: ["house-body"],
+        action: {
+          type: "create",
+          shape: "triangle",
+          count: 1,
+          props: { color: "#ef4444", size: "large", position: { x: 500, y: 230 } }
+        }
+      },
+      {
+        id: "sun",
+        title: "画太阳",
+        action: {
+          type: "create",
+          shape: "circle",
+          count: 1,
+          props: { color: "#eab308", size: "medium", position: { x: 830, y: 110 } }
+        }
+      }
+    ]
+  };
 }
 
 function normalizeText(text: string): string {
