@@ -82,6 +82,24 @@ export function drawingReducer(state: DrawingState, action: DrawingAction): Draw
       );
       return commit(state, shapes, { selectedIds: targetIds, message: "已缩放图形" });
     }
+    case "bringToFront": {
+      const targetIds = resolveTargetIds(state, action.target);
+      if (targetIds.length === 0) {
+        return { ...state, message: "没有可调整的图形" };
+      }
+
+      const shapes = reorderShapes(state.shapes, targetIds, "front");
+      return commit(state, shapes, { selectedIds: targetIds, message: "已置顶图形" });
+    }
+    case "sendToBack": {
+      const targetIds = resolveTargetIds(state, action.target);
+      if (targetIds.length === 0) {
+        return { ...state, message: "没有可调整的图形" };
+      }
+
+      const shapes = reorderShapes(state.shapes, targetIds, "back");
+      return commit(state, shapes, { selectedIds: targetIds, message: "已置底图形" });
+    }
     case "undo": {
       const previous = state.past.at(-1);
       if (!previous) {
@@ -119,6 +137,13 @@ export function drawingReducer(state: DrawingState, action: DrawingAction): Draw
     default:
       return state;
   }
+}
+
+function reorderShapes(shapes: DrawableShape[], targetIds: string[], direction: "front" | "back"): DrawableShape[] {
+  const targetSet = new Set(targetIds);
+  const targets = shapes.filter((shape) => targetSet.has(shape.id));
+  const rest = shapes.filter((shape) => !targetSet.has(shape.id));
+  return direction === "front" ? [...rest, ...targets] : [...targets, ...rest];
 }
 
 function commit(state: DrawingState, shapes: DrawableShape[], patch: Partial<DrawingState>): DrawingState {

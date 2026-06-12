@@ -125,6 +125,22 @@ describe("parseCommand", () => {
     ]);
   });
 
+  it("parses layer ordering commands", () => {
+    expect(parseCommand("把第二个圆置顶")).toEqual([
+      {
+        type: "bringToFront",
+        target: { kind: "circle", index: 2 }
+      }
+    ]);
+
+    expect(parseCommand("把第二个圆置底")).toEqual([
+      {
+        type: "sendToBack",
+        target: { kind: "circle", index: 2 }
+      }
+    ]);
+  });
+
   it("parses undo redo clear and export commands", () => {
     expect(parseCommand("撤销")).toEqual([{ type: "undo" }]);
     expect(parseCommand("重做")).toEqual([{ type: "redo" }]);

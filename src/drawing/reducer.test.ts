@@ -144,6 +144,42 @@ describe("drawingReducer", () => {
     expect(updated.shapes[0]).toMatchObject({ width: 180, height: 120 });
   });
 
+  it("brings target shapes to the front", () => {
+    const state = {
+      ...createInitialDrawingState(),
+      shapes: [
+        { id: "shape-1", kind: "circle" as const, x: 100, y: 100, width: 80, height: 80, color: "#ef4444", strokeWidth: 6 },
+        { id: "shape-2", kind: "rect" as const, x: 120, y: 100, width: 120, height: 80, color: "#2563eb", strokeWidth: 6 },
+        { id: "shape-3", kind: "triangle" as const, x: 140, y: 100, width: 80, height: 80, color: "#16a34a", strokeWidth: 6 }
+      ]
+    };
+
+    const updated = drawingReducer(state, {
+      type: "bringToFront",
+      target: { kind: "circle" }
+    });
+
+    expect(updated.shapes.map((shape) => shape.id)).toEqual(["shape-2", "shape-3", "shape-1"]);
+  });
+
+  it("sends target shapes to the back", () => {
+    const state = {
+      ...createInitialDrawingState(),
+      shapes: [
+        { id: "shape-1", kind: "circle" as const, x: 100, y: 100, width: 80, height: 80, color: "#ef4444", strokeWidth: 6 },
+        { id: "shape-2", kind: "rect" as const, x: 120, y: 100, width: 120, height: 80, color: "#2563eb", strokeWidth: 6 },
+        { id: "shape-3", kind: "triangle" as const, x: 140, y: 100, width: 80, height: 80, color: "#16a34a", strokeWidth: 6 }
+      ]
+    };
+
+    const updated = drawingReducer(state, {
+      type: "sendToBack",
+      target: { kind: "triangle" }
+    });
+
+    expect(updated.shapes.map((shape) => shape.id)).toEqual(["shape-3", "shape-1", "shape-2"]);
+  });
+
   it("supports undo and redo", () => {
     const created = drawingReducer(createInitialDrawingState(), {
       type: "create",

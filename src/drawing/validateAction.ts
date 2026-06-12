@@ -35,6 +35,9 @@ export function validateAction(action: unknown): ValidationResult {
       return validateMoveAction(action);
     case "resize":
       return validateResizeAction(action);
+    case "bringToFront":
+    case "sendToBack":
+      return validateTargetAction(action, false);
     case "undo":
     case "redo":
     case "clear":
