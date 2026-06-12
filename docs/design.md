@@ -287,3 +287,28 @@ type PlanTemplate = {
 当前内置 `house-scene`，可以响应“小房子”“房子”“小屋”等表达。`findPlanTemplate` 每次命中都会返回新的 plan 实例，避免执行过程中的状态修改污染原始模板。
 
 这层的后续用途是模板沉淀：LLM 生成的计划如果通过校验、执行效果好、复用价值高，就可以保存为模板。下次遇到相似场景时优先走本地模板，减少模型调用成本和响应延迟；模板未命中时再走 LLM 规划。
+
+## DrawingPlan JSON Schema
+
+`src/planner/drawingPlanSchema.ts` 保存面向 LLM 的结构化输出契约。它导出两份对象：
+
+- `drawingPlanJsonSchema`：标准 JSON Schema，描述 `DrawingPlan` 根对象、步骤数组和每一步 action 的结构。
+- `drawingPlanResponseFormat`：给支持 JSON Schema structured output 的模型调用使用，包含 `name`、`strict` 和 `schema`。
+
+Schema 覆盖当前允许模型规划的动作：
+
+- `create`
+- `update`
+- `delete`
+- `move`
+- `resize`
+- `bringToFront`
+- `sendToBack`
+- `clear`
+- `export`
+
+暂不允许 LLM 在计划步骤中直接输出 `undo`、`redo` 或 `error`。原因是这些动作更适合由用户即时控制或由系统内部错误处理产生，不适合作为复杂绘图计划的一部分。
+
+这层 schema 是第一道约束，目标是减少模型输出非法 JSON 或未知字段。`prepareActions` 和 `validateAction` 仍然是执行前的第二道校验，用来防止越界坐标、过大位移、未知目标引用等运行时风险。
+
+为了适配 strict structured output，schema 中的 object 都显式要求所有声明字段。对业务上可选的内容采用可执行约定处理：例如步骤没有依赖时，`dependsOn` 输出空数组；按类型引用目标时，可以选择只输出 `{ "kind": "circle" }`，也可以输出 `{ "kind": "circle", "index": 2 }`。
