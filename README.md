@@ -87,3 +87,14 @@ npm.cmd run build
 ```
 
 后续接入 LLM 时，可以让模型输出 `DrawingPlan`，前端继续负责校验、展开和执行。
+
+## Plan Template Catalog
+
+常用复杂场景会沉淀到 `src/planner/planTemplates.ts`。模板包含：
+
+- `id`: 稳定模板标识，便于后续统计和复用。
+- `keywords`: 本地命中关键词。
+- `description`: 给人和后续 LLM prompt 阅读的说明。
+- `plan`: 可直接执行的 `DrawingPlan`。
+
+当前内置 `house-scene` 模板，对应“画一幅小房子”。后续可以把 LLM 生成并验证通过的高质量计划沉淀为模板，遇到相似请求时优先本地复用，减少模型调用成本和响应延迟。
