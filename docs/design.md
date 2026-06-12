@@ -261,3 +261,29 @@ SVG 图形使用数组顺序决定绘制顺序。数组中越靠后的图形越�
 - 每一步的 `action` 仍然走 `validateAction`，继续复用颜色、坐标、数量、目标引用等安全边界。
 
 当前本地规则解析器已经支持“画一幅小房子”作为示例计划。后续接入 LLM 时，只需要让模型输出同样的 `DrawingPlan` JSON；前端仍负责校验、展开、执行和展示，不把模型输出直接作用到 SVG DOM。
+
+## Plan Template Catalog
+
+`src/planner/planTemplates.ts` 负责保存可复用的规划模板。模板层不直接执行绘图，而是根据用户输入命中一个 `DrawingPlan`，再交给现有 `prepareActions`、`validateAction` 和 reducer 执行。
+
+模板结构：
+
+```ts
+type PlanTemplate = {
+  id: string;
+  keywords: string[];
+  description: string;
+  plan: DrawingPlan;
+};
+```
+
+字段用途：
+
+- `id` 是稳定标识，后续可以用于命中统计、模板版本管理和 demo 说明。
+- `keywords` 是本地低成本匹配入口。
+- `description` 面向人和后续 LLM prompt，说明模板适合什么场景。
+- `plan` 是可执行的结构化计划。
+
+当前内置 `house-scene`，可以响应“小房子”“房子”“小屋”等表达。`findPlanTemplate` 每次命中都会返回新的 plan 实例，避免执行过程中的状态修改污染原始模板。
+
+这层的后续用途是模板沉淀：LLM 生成的计划如果通过校验、执行效果好、复用价值高，就可以保存为模板。下次遇到相似场景时优先走本地模板，减少模型调用成本和响应延迟；模板未命中时再走 LLM 规划。
