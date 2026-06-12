@@ -8,6 +8,7 @@ import { SvgCanvas } from "../components/SvgCanvas";
 import { ActionLog } from "../components/ActionLog";
 import type { DrawingAction } from "../drawing/types";
 import { exportSvgElement } from "../drawing/exportSvg";
+import { prepareActions } from "../drawing/actionPipeline";
 
 export function App() {
   const [state, dispatch] = useReducer(drawingReducer, undefined, createInitialDrawingState);
@@ -17,7 +18,7 @@ export function App() {
   const svgRef = useRef<SVGSVGElement>(null);
 
   const runActions = (source: string) => {
-    const actions = parseCommand(source);
+    const actions = prepareActions(parseCommand(source));
     setTranscript(source);
     setLogs((current) => [`你说：${source}`, ...current].slice(0, 8));
 
