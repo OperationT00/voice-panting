@@ -1,6 +1,6 @@
 export type ShapeKind = "circle" | "rect" | "line" | "triangle" | "text";
 export type ShapeSize = "small" | "medium" | "large";
-export type ShapePosition =
+export type PresetPosition =
   | "top-left"
   | "top"
   | "top-right"
@@ -11,6 +11,13 @@ export type ShapePosition =
   | "bottom"
   | "bottom-right"
   | "row";
+
+export type CoordinatePosition = {
+  x: number;
+  y: number;
+};
+
+export type ShapePosition = PresetPosition | CoordinatePosition;
 
 export type ShapeProps = {
   color: string;

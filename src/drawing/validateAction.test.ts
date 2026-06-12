@@ -48,6 +48,36 @@ describe("validateAction", () => {
     expect(validateAction(action)).toEqual({ ok: false, message: "一次最多创建 8 个图形" });
   });
 
+  it("accepts coordinate positions inside the canvas", () => {
+    const action = {
+      type: "create",
+      shape: "circle",
+      count: 1,
+      props: {
+        color: "#ef4444",
+        size: "medium",
+        position: { x: 1000, y: 560 }
+      }
+    };
+
+    expect(validateAction(action)).toEqual({ ok: true });
+  });
+
+  it("rejects coordinate positions outside the canvas", () => {
+    const action = {
+      type: "create",
+      shape: "circle",
+      count: 1,
+      props: {
+        color: "#ef4444",
+        size: "medium",
+        position: { x: 1200, y: 560 }
+      }
+    };
+
+    expect(validateAction(action)).toEqual({ ok: false, message: "坐标超出画布范围" });
+  });
+
   it("rejects unsafe move distances", () => {
     const action = {
       type: "move",

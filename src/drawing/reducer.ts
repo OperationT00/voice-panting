@@ -1,4 +1,4 @@
-import type { DrawableShape, DrawingAction, ShapeKind, ShapePosition, ShapeSize } from "./types";
+import type { DrawableShape, DrawingAction, PresetPosition, ShapeKind, ShapePosition, ShapeSize } from "./types";
 import { resolveTargetIds } from "./resolveTargetIds";
 
 export type DrawingState = {
@@ -167,13 +167,17 @@ function getDimensions(kind: ShapeKind, size: ShapeSize): { width: number; heigh
 }
 
 function getPoints(count: number, position: ShapePosition): Array<[number, number]> {
+  if (typeof position !== "string") {
+    return Array.from({ length: count }, (_, index) => [position.x + index * 24, position.y + index * 24]);
+  }
+
   if (position === "row" && count > 1) {
     const gap = 140;
     const start = 500 - ((count - 1) * gap) / 2;
     return Array.from({ length: count }, (_, index) => [start + index * gap, 280]);
   }
 
-  const map: Record<ShapePosition, [number, number]> = {
+  const map: Record<PresetPosition, [number, number]> = {
     "top-left": [180, 130],
     top: [500, 120],
     "top-right": [820, 130],

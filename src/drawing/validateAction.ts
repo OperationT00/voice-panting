@@ -1,10 +1,10 @@
-import type { DrawingAction, ShapeKind, ShapePosition, ShapeSize, TargetRef } from "./types";
+import type { DrawingAction, PresetPosition, ShapeKind, ShapePosition, ShapeSize, TargetRef } from "./types";
 
 type ValidationResult = { ok: true } | { ok: false; message: string };
 
 const shapes: ShapeKind[] = ["circle", "rect", "line", "triangle", "text"];
 const sizes: ShapeSize[] = ["small", "medium", "large"];
-const positions: ShapePosition[] = [
+const positions: PresetPosition[] = [
   "top-left",
   "top",
   "top-right",
@@ -107,9 +107,28 @@ function validateShapeProps(value: unknown, requireAll: boolean): ValidationResu
   if ((requireAll || value.size !== undefined) && !sizes.includes(value.size as ShapeSize)) {
     return { ok: false, message: "不支持的尺寸" };
   }
-  if ((requireAll || value.position !== undefined) && !positions.includes(value.position as ShapePosition)) {
+  if (requireAll || value.position !== undefined) {
+    const positionResult = validatePosition(value.position);
+    if (!positionResult.ok) {
+      return positionResult;
+    }
+  }
+  return { ok: true };
+}
+
+function validatePosition(value: unknown): ValidationResult {
+  if (typeof value === "string") {
+    return positions.includes(value as PresetPosition) ? { ok: true } : { ok: false, message: "不支持的位置" };
+  }
+
+  if (!isRecord(value) || typeof value.x !== "number" || typeof value.y !== "number") {
     return { ok: false, message: "不支持的位置" };
   }
+
+  if (!Number.isFinite(value.x) || !Number.isFinite(value.y) || value.x < 0 || value.x > 1000 || value.y < 0 || value.y > 560) {
+    return { ok: false, message: "坐标超出画布范围" };
+  }
+
   return { ok: true };
 }
 
