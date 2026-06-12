@@ -29,4 +29,17 @@ describe("App", () => {
     expect(screen.getByText(/"type": "create"/)).toBeInTheDocument();
     expect(screen.getByText(/"shape": "circle"/)).toBeInTheDocument();
   });
+
+  it("runs a planned scene command and shows the plan JSON", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(screen.getByLabelText("文字模拟语音"), "画一幅小房子{Enter}");
+
+    expect(screen.getByText(/"type": "plan"/)).toBeInTheDocument();
+    expect(screen.getByText(/"id": "house-body"/)).toBeInTheDocument();
+    expect(document.querySelector('svg rect[fill="#f97316"]')).toBeInTheDocument();
+    expect(document.querySelector('svg polygon[fill="#ef4444"]')).toBeInTheDocument();
+    expect(document.querySelector('svg circle[fill="#eab308"]')).toBeInTheDocument();
+  });
 });

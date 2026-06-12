@@ -56,3 +56,34 @@ npm.cmd run dev
 npm.cmd test
 npm.cmd run build
 ```
+
+## DrawingPlan 规划输入
+
+复杂指令可以被解析成 `DrawingPlan`，再由 `prepareActions` 展开成有序 `DrawingAction[]` 执行。当前可试指令：
+
+```text
+画一幅小房子
+```
+
+示例结构：
+
+```json
+{
+  "type": "plan",
+  "title": "画一幅小房子",
+  "steps": [
+    {
+      "id": "house-body",
+      "title": "画房身",
+      "action": {
+        "type": "create",
+        "shape": "rect",
+        "count": 1,
+        "props": { "color": "#f97316", "size": "large", "position": { "x": 500, "y": 340 } }
+      }
+    }
+  ]
+}
+```
+
+后续接入 LLM 时，可以让模型输出 `DrawingPlan`，前端继续负责校验、展开和执行。

@@ -7,7 +7,7 @@ import { speak } from "../speech/speechSynthesis";
 import { SvgCanvas } from "../components/SvgCanvas";
 import { ActionLog } from "../components/ActionLog";
 import { ActionJsonPanel } from "../components/ActionJsonPanel";
-import type { DrawingAction } from "../drawing/types";
+import type { DrawingAction, DrawingInput } from "../drawing/types";
 import { exportSvgElement } from "../drawing/exportSvg";
 import { prepareActions } from "../drawing/actionPipeline";
 
@@ -15,13 +15,14 @@ export function App() {
   const [state, dispatch] = useReducer(drawingReducer, undefined, createInitialDrawingState);
   const [transcript, setTranscript] = useState("");
   const [simulatedText, setSimulatedText] = useState("");
-  const [lastActions, setLastActions] = useState<DrawingAction[]>([]);
+  const [lastInput, setLastInput] = useState<DrawingInput>([]);
   const [logs, setLogs] = useState<string[]>(["系统已就绪"]);
   const svgRef = useRef<SVGSVGElement>(null);
 
   const runActions = (source: string) => {
-    const actions = prepareActions(parseCommand(source));
-    setLastActions(actions);
+    const parsedInput = parseCommand(source);
+    const actions = prepareActions(parsedInput);
+    setLastInput(parsedInput);
     setTranscript(source);
     setLogs((current) => [`你说：${source}`, ...current].slice(0, 8));
 
@@ -42,6 +43,7 @@ export function App() {
 
   const manualAction = (action: DrawingAction, label: string) => {
     dispatch(action);
+    setLastInput([action]);
     setLogs((current) => [`快捷操作：${label}`, ...current].slice(0, 8));
   };
 
@@ -134,6 +136,7 @@ export function App() {
               "把第二个圆放大",
               "把第二个圆置顶",
               "把第二个圆置底",
+              "画一幅小房子",
               "删除第二个圆",
               "把所有红色图形改成绿色",
               "撤销",
@@ -147,7 +150,7 @@ export function App() {
         </div>
 
         <ActionLog logs={logs} />
-        <ActionJsonPanel actions={lastActions} />
+        <ActionJsonPanel input={lastInput} />
       </aside>
     </main>
   );
