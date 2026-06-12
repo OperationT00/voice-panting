@@ -8,9 +8,11 @@ describe("parseCommand", () => {
         type: "create",
         shape: "circle",
         count: 1,
-        color: "#ef4444",
-        size: "medium",
-        position: "center"
+        props: {
+          color: "#ef4444",
+          size: "medium",
+          position: "center"
+        }
       }
     ]);
   });
@@ -21,9 +23,11 @@ describe("parseCommand", () => {
         type: "create",
         shape: "rect",
         count: 3,
-        color: "#2563eb",
-        size: "medium",
-        position: "row"
+        props: {
+          color: "#2563eb",
+          size: "medium",
+          position: "row"
+        }
       }
     ]);
   });
@@ -32,7 +36,7 @@ describe("parseCommand", () => {
     expect(parseCommand("把刚才的图形改成紫色")).toEqual([
       {
         type: "update",
-        target: "last",
+        target: { ref: "last" },
         props: {
           color: "#9333ea"
         }
