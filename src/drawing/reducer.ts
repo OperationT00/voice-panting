@@ -49,6 +49,39 @@ export function drawingReducer(state: DrawingState, action: DrawingAction): Draw
       );
       return commit(state, shapes, { selectedIds: targetIds, message: "已更新图形" });
     }
+    case "delete": {
+      const targetIds = resolveTargetIds(state, action.target);
+      if (targetIds.length === 0) {
+        return { ...state, message: "没有可删除的图形" };
+      }
+
+      const shapes = state.shapes.filter((shape) => !targetIds.includes(shape.id));
+      return commit(state, shapes, { selectedIds: [], message: "已删除图形" });
+    }
+    case "move": {
+      const targetIds = resolveTargetIds(state, action.target);
+      if (targetIds.length === 0) {
+        return { ...state, message: "没有可移动的图形" };
+      }
+
+      const shapes = state.shapes.map((shape) =>
+        targetIds.includes(shape.id) ? { ...shape, x: shape.x + action.dx, y: shape.y + action.dy } : shape
+      );
+      return commit(state, shapes, { selectedIds: targetIds, message: "已移动图形" });
+    }
+    case "resize": {
+      const targetIds = resolveTargetIds(state, action.target);
+      if (targetIds.length === 0) {
+        return { ...state, message: "没有可缩放的图形" };
+      }
+
+      const shapes = state.shapes.map((shape) =>
+        targetIds.includes(shape.id)
+          ? { ...shape, width: Math.round(shape.width * action.scale), height: Math.round(shape.height * action.scale) }
+          : shape
+      );
+      return commit(state, shapes, { selectedIds: targetIds, message: "已缩放图形" });
+    }
     case "undo": {
       const previous = state.past.at(-1);
       if (!previous) {

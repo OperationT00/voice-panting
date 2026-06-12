@@ -51,6 +51,19 @@ export function parseCommand(rawText: string): DrawingAction[] {
     return [{ type: "export" }];
   }
 
+  if (/删除/.test(text)) {
+    return [{ type: "delete", target: pickTarget(text) }];
+  }
+
+  if (/移动|移到|挪/.test(text)) {
+    const delta = pickMoveDelta(text);
+    return [{ type: "move", target: pickTarget(text), dx: delta.dx, dy: delta.dy }];
+  }
+
+  if (/放大|缩小/.test(text)) {
+    return [{ type: "resize", target: pickTarget(text), scale: /缩小/.test(text) ? 0.8 : 1.25 }];
+  }
+
   if (/改成|变成|换成/.test(text)) {
     const color = pickNewColor(text);
     if (color) {
@@ -137,6 +150,23 @@ function pickOrdinal(text: string): number | undefined {
 
   const word = text.match(/第([一二两三四五])个/)?.[1];
   return word ? numberWords[word] : undefined;
+}
+
+function pickMoveDelta(text: string): { dx: number; dy: number } {
+  const amount = /大幅|很多|远一点/.test(text) ? 120 : 60;
+  if (/向左|往左|左移/.test(text)) {
+    return { dx: -amount, dy: 0 };
+  }
+  if (/向右|往右|右移/.test(text)) {
+    return { dx: amount, dy: 0 };
+  }
+  if (/向上|往上|上移/.test(text)) {
+    return { dx: 0, dy: -amount };
+  }
+  if (/向下|往下|下移/.test(text)) {
+    return { dx: 0, dy: amount };
+  }
+  return { dx: amount, dy: 0 };
 }
 
 function pickSize(text: string): ShapeSize {

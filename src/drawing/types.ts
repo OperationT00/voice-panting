@@ -38,6 +38,21 @@ export type DrawingAction =
       target: TargetRef;
       props: Partial<ShapeProps>;
     }
+  | {
+      type: "delete";
+      target: TargetRef;
+    }
+  | {
+      type: "move";
+      target: TargetRef;
+      dx: number;
+      dy: number;
+    }
+  | {
+      type: "resize";
+      target: TargetRef;
+      scale: number;
+    }
   | { type: "undo" }
   | { type: "redo" }
   | { type: "clear" }
