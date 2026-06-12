@@ -18,7 +18,13 @@ export type ShapeProps = {
   position: ShapePosition;
 };
 
-export type TargetRef = { ref: "last" | "all" | "selected" };
+export type SpatialTarget = "leftmost" | "rightmost" | "topmost" | "bottommost";
+
+export type TargetRef =
+  | { ref: "last" | "all" | "selected" }
+  | { kind: ShapeKind; index?: number }
+  | { color: string }
+  | { spatial: SpatialTarget };
 
 export type DrawingAction =
   | {

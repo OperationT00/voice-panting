@@ -44,6 +44,42 @@ describe("parseCommand", () => {
     ]);
   });
 
+  it("updates a shape by kind and one-based index", () => {
+    expect(parseCommand("把第二个圆改成蓝色")).toEqual([
+      {
+        type: "update",
+        target: { kind: "circle", index: 2 },
+        props: {
+          color: "#2563eb"
+        }
+      }
+    ]);
+  });
+
+  it("updates all shapes by kind", () => {
+    expect(parseCommand("把所有圆改成绿色")).toEqual([
+      {
+        type: "update",
+        target: { kind: "circle" },
+        props: {
+          color: "#16a34a"
+        }
+      }
+    ]);
+  });
+
+  it("updates all shapes by current color", () => {
+    expect(parseCommand("把所有红色图形改成蓝色")).toEqual([
+      {
+        type: "update",
+        target: { color: "#ef4444" },
+        props: {
+          color: "#2563eb"
+        }
+      }
+    ]);
+  });
+
   it("parses undo redo clear and export commands", () => {
     expect(parseCommand("撤销")).toEqual([{ type: "undo" }]);
     expect(parseCommand("重做")).toEqual([{ type: "redo" }]);

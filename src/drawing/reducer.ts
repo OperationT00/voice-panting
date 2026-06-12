@@ -1,4 +1,5 @@
 import type { DrawableShape, DrawingAction, ShapeKind, ShapePosition, ShapeSize } from "./types";
+import { resolveTargetIds } from "./resolveTargetIds";
 
 export type DrawingState = {
   shapes: DrawableShape[];
@@ -85,16 +86,6 @@ export function drawingReducer(state: DrawingState, action: DrawingAction): Draw
     default:
       return state;
   }
-}
-
-function resolveTargetIds(state: DrawingState, target: { ref: "last" | "all" | "selected" }): string[] {
-  if (target.ref === "all") {
-    return state.shapes.map((shape) => shape.id);
-  }
-  if (target.ref === "selected") {
-    return state.selectedIds;
-  }
-  return state.selectedIds.length > 0 ? state.selectedIds : state.shapes.slice(-1).map((shape) => shape.id);
 }
 
 function commit(state: DrawingState, shapes: DrawableShape[], patch: Partial<DrawingState>): DrawingState {

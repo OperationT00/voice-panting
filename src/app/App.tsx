@@ -121,7 +121,15 @@ export function App() {
         <div className="panel-section">
           <h2>可试指令</h2>
           <div className="chips">
-            {["画一个红色圆", "在左上角画一个蓝色矩形", "画三个绿色圆，从左到右排列", "把刚才的图形改成紫色", "撤销", "导出 SVG"].map((item) => (
+            {[
+              "画一个红色圆",
+              "在左上角画一个蓝色矩形",
+              "画三个红色圆，从左到右排列",
+              "把第二个圆改成蓝色",
+              "把所有红色图形改成绿色",
+              "撤销",
+              "导出 SVG"
+            ].map((item) => (
               <button key={item} onClick={() => runActions(item)} type="button">
                 {item}
               </button>
