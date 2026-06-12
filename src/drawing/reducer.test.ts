@@ -7,9 +7,11 @@ describe("drawingReducer", () => {
       type: "create",
       shape: "circle",
       count: 3,
-      color: "#ef4444",
-      size: "medium",
-      position: "row"
+      props: {
+        color: "#ef4444",
+        size: "medium",
+        position: "row"
+      }
     });
 
     expect(state.shapes).toHaveLength(3);
@@ -23,14 +25,16 @@ describe("drawingReducer", () => {
       type: "create",
       shape: "rect",
       count: 1,
-      color: "#2563eb",
-      size: "medium",
-      position: "center"
+      props: {
+        color: "#2563eb",
+        size: "medium",
+        position: "center"
+      }
     });
 
     const updated = drawingReducer(created, {
       type: "update",
-      target: "last",
+      target: { ref: "last" },
       props: { color: "#9333ea" }
     });
 
@@ -42,9 +46,11 @@ describe("drawingReducer", () => {
       type: "create",
       shape: "triangle",
       count: 1,
-      color: "#16a34a",
-      size: "medium",
-      position: "center"
+      props: {
+        color: "#16a34a",
+        size: "medium",
+        position: "center"
+      }
     });
 
     const undone = drawingReducer(created, { type: "undo" });

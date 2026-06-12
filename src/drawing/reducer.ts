@@ -23,7 +23,14 @@ export function createInitialDrawingState(): DrawingState {
 export function drawingReducer(state: DrawingState, action: DrawingAction): DrawingState {
   switch (action.type) {
     case "create": {
-      const created = createShapes(action.shape, action.count, action.color, action.size, action.position, state.nextId);
+      const created = createShapes(
+        action.shape,
+        action.count,
+        action.props.color,
+        action.props.size,
+        action.props.position,
+        state.nextId
+      );
       return commit(state, [...state.shapes, ...created], {
         selectedIds: created.map((shape) => shape.id),
         nextId: state.nextId + created.length,
@@ -31,7 +38,7 @@ export function drawingReducer(state: DrawingState, action: DrawingAction): Draw
       });
     }
     case "update": {
-      const targetIds = action.target === "all" ? state.shapes.map((shape) => shape.id) : state.selectedIds;
+      const targetIds = resolveTargetIds(state, action.target);
       if (targetIds.length === 0) {
         return { ...state, message: "没有可修改的图形" };
       }
@@ -78,6 +85,16 @@ export function drawingReducer(state: DrawingState, action: DrawingAction): Draw
     default:
       return state;
   }
+}
+
+function resolveTargetIds(state: DrawingState, target: { ref: "last" | "all" | "selected" }): string[] {
+  if (target.ref === "all") {
+    return state.shapes.map((shape) => shape.id);
+  }
+  if (target.ref === "selected") {
+    return state.selectedIds;
+  }
+  return state.selectedIds.length > 0 ? state.selectedIds : state.shapes.slice(-1).map((shape) => shape.id);
 }
 
 function commit(state: DrawingState, shapes: DrawableShape[], patch: Partial<DrawingState>): DrawingState {

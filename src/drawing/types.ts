@@ -12,26 +12,24 @@ export type ShapePosition =
   | "bottom-right"
   | "row";
 
-export type ShapeTarget = "last" | "all";
-
 export type ShapeProps = {
   color: string;
   size: ShapeSize;
   position: ShapePosition;
 };
 
+export type TargetRef = { ref: "last" | "all" | "selected" };
+
 export type DrawingAction =
   | {
       type: "create";
       shape: ShapeKind;
       count: number;
-      color: string;
-      size: ShapeSize;
-      position: ShapePosition;
+      props: ShapeProps;
     }
   | {
       type: "update";
-      target: ShapeTarget;
+      target: TargetRef;
       props: Partial<ShapeProps>;
     }
   | { type: "undo" }

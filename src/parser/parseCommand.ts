@@ -54,7 +54,7 @@ export function parseCommand(rawText: string): DrawingAction[] {
   if (/改成|变成|换成/.test(text)) {
     const color = pickColor(text);
     if (color) {
-      return [{ type: "update", target: "last", props: { color } }];
+      return [{ type: "update", target: { ref: "last" }, props: { color } }];
     }
   }
 
@@ -66,9 +66,11 @@ export function parseCommand(rawText: string): DrawingAction[] {
           type: "create",
           shape,
           count: pickCount(text),
-          color: pickColor(text) ?? "#111827",
-          size: pickSize(text),
-          position: pickPosition(text)
+          props: {
+            color: pickColor(text) ?? "#111827",
+            size: pickSize(text),
+            position: pickPosition(text)
+          }
         }
       ];
     }

@@ -55,6 +55,39 @@ SpeechSynthesis 语音反馈
 
 核心设计是把语音文本转成标准动作，而不是直接操作 SVG DOM。这样后续可以把规则解析器替换或增强为大模型解析器，绘图层不需要重写。
 
+## Action Schema v2
+
+当前绘图能力通过 `DrawingAction` 判别联合类型表达。每个动作都有稳定的 `type` 字段，方便 TypeScript 收窄类型，也方便后续让 LLM 输出结构化 JSON。
+
+创建图形示例：
+
+```json
+{
+  "type": "create",
+  "shape": "circle",
+  "count": 1,
+  "props": {
+    "color": "#ef4444",
+    "size": "medium",
+    "position": "center"
+  }
+}
+```
+
+更新图形示例：
+
+```json
+{
+  "type": "update",
+  "target": { "ref": "last" },
+  "props": {
+    "color": "#2563eb"
+  }
+}
+```
+
+这个结构把“理解用户意图”和“执行绘图动作”分开。后续接入 LLM 时，模型只需要生成 `DrawingAction[]`，前端继续负责校验、执行和渲染。
+
 ## 成本控制策略
 
 计划采用：
