@@ -1,4 +1,4 @@
-import type { DrawingAction, ShapeKind, ShapePosition, ShapeSize } from "../drawing/types";
+import type { DrawingAction, ShapeKind, ShapePosition, ShapeSize, TargetRef } from "../drawing/types";
 
 const colors: Array<[string, string]> = [
   ["紫", "#9333ea"],
@@ -52,9 +52,9 @@ export function parseCommand(rawText: string): DrawingAction[] {
   }
 
   if (/改成|变成|换成/.test(text)) {
-    const color = pickColor(text);
+    const color = pickNewColor(text);
     if (color) {
-      return [{ type: "update", target: { ref: "last" }, props: { color } }];
+      return [{ type: "update", target: pickTarget(text), props: { color } }];
     }
   }
 
@@ -87,6 +87,34 @@ function pickColor(text: string): string | undefined {
   return colors.find(([keyword]) => text.includes(keyword))?.[1];
 }
 
+function pickNewColor(text: string): string | undefined {
+  const match = text.match(/(?:改成|变成|换成)(.+)$/);
+  return pickColor(match?.[1] ?? text);
+}
+
+function pickTarget(text: string): TargetRef {
+  const beforeChange = text.split(/改成|变成|换成/)[0] ?? text;
+  const shape = pickShape(beforeChange);
+  const color = pickColor(beforeChange);
+
+  if (/所有/.test(beforeChange)) {
+    if (color) {
+      return { color };
+    }
+    if (shape) {
+      return { kind: shape };
+    }
+    return { ref: "all" };
+  }
+
+  if (shape) {
+    const index = pickOrdinal(beforeChange);
+    return index ? { kind: shape, index } : { kind: shape };
+  }
+
+  return { ref: "last" };
+}
+
 function pickShape(text: string): ShapeKind | undefined {
   return shapes.find(([keyword]) => text.includes(keyword))?.[1];
 }
@@ -99,6 +127,16 @@ function pickCount(text: string): number {
 
   const word = Object.keys(numberWords).find((item) => text.includes(item));
   return word ? numberWords[word] : 1;
+}
+
+function pickOrdinal(text: string): number | undefined {
+  const digit = text.match(/第([1-5])个/)?.[1];
+  if (digit) {
+    return Number(digit);
+  }
+
+  const word = text.match(/第([一二两三四五])个/)?.[1];
+  return word ? numberWords[word] : undefined;
 }
 
 function pickSize(text: string): ShapeSize {
