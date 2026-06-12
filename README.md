@@ -98,3 +98,14 @@ npm.cmd run build
 - `plan`: 可直接执行的 `DrawingPlan`。
 
 当前内置 `house-scene` 模板，对应“画一幅小房子”。后续可以把 LLM 生成并验证通过的高质量计划沉淀为模板，遇到相似请求时优先本地复用，减少模型调用成本和响应延迟。
+
+## DrawingPlan JSON Schema
+
+`src/planner/drawingPlanSchema.ts` 导出 `drawingPlanJsonSchema` 和 `drawingPlanResponseFormat`。
+
+- `drawingPlanJsonSchema`: 描述 LLM 需要输出的 `DrawingPlan` 结构。
+- `drawingPlanResponseFormat`: 面向支持 JSON Schema structured output 的模型调用封装。
+
+Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目标引用和安全数值边界。后续接入 LLM 时，应要求模型只输出符合该 schema 的 JSON，再交给 `prepareActions` 和 `validateAction` 做运行时校验。
+
+为适配 strict structured output，schema 中的对象字段都显式 required；例如步骤没有依赖时，`dependsOn` 输出空数组。
