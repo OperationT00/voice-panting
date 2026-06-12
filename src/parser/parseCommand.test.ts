@@ -32,6 +32,21 @@ describe("parseCommand", () => {
     ]);
   });
 
+  it("creates a shape at an explicit coordinate", () => {
+    expect(parseCommand("在坐标200,300画一个红色圆")).toEqual([
+      {
+        type: "create",
+        shape: "circle",
+        count: 1,
+        props: {
+          color: "#ef4444",
+          size: "medium",
+          position: { x: 200, y: 300 }
+        }
+      }
+    ]);
+  });
+
   it("updates the last shape color", () => {
     expect(parseCommand("把刚才的图形改成紫色")).toEqual([
       {

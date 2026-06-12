@@ -20,6 +20,21 @@ describe("drawingReducer", () => {
     expect(state.selectedIds).toEqual(["shape-1", "shape-2", "shape-3"]);
   });
 
+  it("creates a shape at an explicit coordinate position", () => {
+    const state = drawingReducer(createInitialDrawingState(), {
+      type: "create",
+      shape: "circle",
+      count: 1,
+      props: {
+        color: "#ef4444",
+        size: "medium",
+        position: { x: 240, y: 180 }
+      }
+    });
+
+    expect(state.shapes[0]).toMatchObject({ x: 240, y: 180 });
+  });
+
   it("updates the selected shape color", () => {
     const created = drawingReducer(createInitialDrawingState(), {
       type: "create",

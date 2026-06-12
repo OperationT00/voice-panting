@@ -1,4 +1,4 @@
-import type { DrawingAction, ShapeKind, ShapePosition, ShapeSize, TargetRef } from "../drawing/types";
+import type { CoordinatePosition, DrawingAction, ShapeKind, ShapePosition, ShapeSize, TargetRef } from "../drawing/types";
 
 const colors: Array<[string, string]> = [
   ["紫", "#9333ea"],
@@ -133,6 +133,10 @@ function pickShape(text: string): ShapeKind | undefined {
 }
 
 function pickCount(text: string): number {
+  if (pickCoordinatePosition(text)) {
+    return 1;
+  }
+
   const digit = text.match(/[1-5]/)?.[0];
   if (digit) {
     return Number(digit);
@@ -180,6 +184,11 @@ function pickSize(text: string): ShapeSize {
 }
 
 function pickPosition(text: string): ShapePosition {
+  const coordinate = pickCoordinatePosition(text);
+  if (coordinate) {
+    return coordinate;
+  }
+
   if (/从左到右|横向|排列/.test(text)) {
     return "row";
   }
@@ -208,4 +217,18 @@ function pickPosition(text: string): ShapePosition {
     return "right";
   }
   return "center";
+}
+
+function pickCoordinatePosition(text: string): CoordinatePosition | undefined {
+  const coordinateMatch = text.match(/坐标(\d{1,4})(?:,|，)?(\d{1,4})/);
+  if (coordinateMatch) {
+    return { x: Number(coordinateMatch[1]), y: Number(coordinateMatch[2]) };
+  }
+
+  const xyMatch = text.match(/x(\d{1,4})y(\d{1,4})/i);
+  if (xyMatch) {
+    return { x: Number(xyMatch[1]), y: Number(xyMatch[2]) };
+  }
+
+  return undefined;
 }
