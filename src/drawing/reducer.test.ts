@@ -79,6 +79,56 @@ describe("drawingReducer", () => {
     expect(updated.shapes.map((shape) => shape.color)).toEqual(["#9333ea", "#2563eb", "#9333ea"]);
   });
 
+  it("deletes shapes matched by target", () => {
+    const state = {
+      ...createInitialDrawingState(),
+      shapes: [
+        { id: "shape-1", kind: "circle" as const, x: 100, y: 100, width: 80, height: 80, color: "#ef4444", strokeWidth: 6 },
+        { id: "shape-2", kind: "rect" as const, x: 200, y: 100, width: 120, height: 80, color: "#2563eb", strokeWidth: 6 }
+      ]
+    };
+
+    const updated = drawingReducer(state, {
+      type: "delete",
+      target: { kind: "circle" }
+    });
+
+    expect(updated.shapes.map((shape) => shape.id)).toEqual(["shape-2"]);
+  });
+
+  it("moves shapes matched by target", () => {
+    const state = {
+      ...createInitialDrawingState(),
+      shapes: [{ id: "shape-1", kind: "circle" as const, x: 100, y: 100, width: 80, height: 80, color: "#ef4444", strokeWidth: 6 }],
+      selectedIds: ["shape-1"]
+    };
+
+    const updated = drawingReducer(state, {
+      type: "move",
+      target: { ref: "selected" },
+      dx: 60,
+      dy: -20
+    });
+
+    expect(updated.shapes[0]).toMatchObject({ x: 160, y: 80 });
+  });
+
+  it("resizes shapes matched by target", () => {
+    const state = {
+      ...createInitialDrawingState(),
+      shapes: [{ id: "shape-1", kind: "rect" as const, x: 100, y: 100, width: 120, height: 80, color: "#2563eb", strokeWidth: 6 }],
+      selectedIds: ["shape-1"]
+    };
+
+    const updated = drawingReducer(state, {
+      type: "resize",
+      target: { ref: "selected" },
+      scale: 1.5
+    });
+
+    expect(updated.shapes[0]).toMatchObject({ width: 180, height: 120 });
+  });
+
   it("supports undo and redo", () => {
     const created = drawingReducer(createInitialDrawingState(), {
       type: "create",

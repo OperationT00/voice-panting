@@ -80,6 +80,36 @@ describe("parseCommand", () => {
     ]);
   });
 
+  it("deletes shapes by target", () => {
+    expect(parseCommand("删除第二个圆")).toEqual([
+      {
+        type: "delete",
+        target: { kind: "circle", index: 2 }
+      }
+    ]);
+  });
+
+  it("moves the last shape by direction", () => {
+    expect(parseCommand("把刚才的图形向右移动一点")).toEqual([
+      {
+        type: "move",
+        target: { ref: "last" },
+        dx: 60,
+        dy: 0
+      }
+    ]);
+  });
+
+  it("resizes shapes by target", () => {
+    expect(parseCommand("把所有圆放大")).toEqual([
+      {
+        type: "resize",
+        target: { kind: "circle" },
+        scale: 1.25
+      }
+    ]);
+  });
+
   it("parses undo redo clear and export commands", () => {
     expect(parseCommand("撤销")).toEqual([{ type: "undo" }]);
     expect(parseCommand("重做")).toEqual([{ type: "redo" }]);
