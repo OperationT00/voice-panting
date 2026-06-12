@@ -6,6 +6,7 @@ import { useSpeechRecognition } from "../speech/useSpeechRecognition";
 import { speak } from "../speech/speechSynthesis";
 import { SvgCanvas } from "../components/SvgCanvas";
 import { ActionLog } from "../components/ActionLog";
+import { ActionJsonPanel } from "../components/ActionJsonPanel";
 import type { DrawingAction } from "../drawing/types";
 import { exportSvgElement } from "../drawing/exportSvg";
 import { prepareActions } from "../drawing/actionPipeline";
@@ -14,11 +15,13 @@ export function App() {
   const [state, dispatch] = useReducer(drawingReducer, undefined, createInitialDrawingState);
   const [transcript, setTranscript] = useState("");
   const [simulatedText, setSimulatedText] = useState("");
+  const [lastActions, setLastActions] = useState<DrawingAction[]>([]);
   const [logs, setLogs] = useState<string[]>(["系统已就绪"]);
   const svgRef = useRef<SVGSVGElement>(null);
 
   const runActions = (source: string) => {
     const actions = prepareActions(parseCommand(source));
+    setLastActions(actions);
     setTranscript(source);
     setLogs((current) => [`你说：${source}`, ...current].slice(0, 8));
 
@@ -142,6 +145,7 @@ export function App() {
         </div>
 
         <ActionLog logs={logs} />
+        <ActionJsonPanel actions={lastActions} />
       </aside>
     </main>
   );
