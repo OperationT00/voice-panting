@@ -64,6 +64,14 @@ export function parseCommand(rawText: string): DrawingAction[] {
     return [{ type: "resize", target: pickTarget(text), scale: /缩小/.test(text) ? 0.8 : 1.25 }];
   }
 
+  if (/置顶|放到最前|移到最前|上移一层/.test(text)) {
+    return [{ type: "bringToFront", target: pickTarget(text) }];
+  }
+
+  if (/置底|放到最后|移到最后|下移一层/.test(text)) {
+    return [{ type: "sendToBack", target: pickTarget(text) }];
+  }
+
   if (/改成|变成|换成/.test(text)) {
     const color = pickNewColor(text);
     if (color) {

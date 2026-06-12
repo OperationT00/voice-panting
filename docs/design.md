@@ -137,6 +137,28 @@ SpeechSynthesis 语音反馈
 }
 ```
 
+## 绘制顺序
+
+SVG 图形使用数组顺序决定绘制顺序。数组中越靠后的图形越晚绘制，因此会覆盖前面的图形。
+
+系统支持两个图层动作：
+
+```json
+{
+  "type": "bringToFront",
+  "target": { "kind": "circle", "index": 2 }
+}
+```
+
+```json
+{
+  "type": "sendToBack",
+  "target": { "kind": "circle", "index": 2 }
+}
+```
+
+这让后续 LLM 可以控制复杂画面的前后关系，例如让文字位于最上层、背景图形位于最底层。
+
 这个结构把“理解用户意图”和“执行绘图动作”分开。后续接入 LLM 时，模型只需要生成 `DrawingAction[]`，前端继续负责校验、执行和渲染。
 
 ## Action 校验

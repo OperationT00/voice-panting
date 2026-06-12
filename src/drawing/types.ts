@@ -60,6 +60,14 @@ export type DrawingAction =
       target: TargetRef;
       scale: number;
     }
+  | {
+      type: "bringToFront";
+      target: TargetRef;
+    }
+  | {
+      type: "sendToBack";
+      target: TargetRef;
+    }
   | { type: "undo" }
   | { type: "redo" }
   | { type: "clear" }
