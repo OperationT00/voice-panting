@@ -1,0 +1,40 @@
+# Voice Panting
+
+纯语音控制的 SVG 绘图工具 MVP。用户通过中文语音创建、修改、撤销、清空和导出矢量图形。
+
+## 技术栈
+
+- Vite + React + TypeScript：快速搭建可维护的前端应用。
+- SVG：每个图形都是可编辑对象，方便后续支持“修改第二个圆”“删除左边矩形”等指令。
+- Web Speech API：浏览器内置语音识别，MVP 阶段不依赖后端服务。
+- SpeechSynthesis API：执行后给出语音反馈。
+- Vitest：覆盖指令解析和绘图状态管理。
+
+## 本地运行
+
+```powershell
+npm.cmd install
+npm.cmd run dev
+```
+
+推荐使用 Chrome 或 Edge 浏览器体验语音识别。
+
+## 可试指令
+
+```text
+画一个红色圆
+在左上角画一个蓝色矩形
+画三个绿色圆，从左到右排列
+把刚才的图形改成紫色
+撤销
+重做
+清空画布
+导出 SVG
+```
+
+## 验证
+
+```powershell
+npm.cmd test
+npm.cmd run build
+```
