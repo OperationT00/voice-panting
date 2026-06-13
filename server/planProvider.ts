@@ -30,7 +30,7 @@ export type PlanProvider = {
   generatePlan: (request: PlanProviderRequest) => Promise<ServerPlannerResult>;
 };
 
-type ProviderEnv = Record<string, string | undefined>;
+export type ProviderEnv = Record<string, string | undefined>;
 
 type OpenAiCompatibleProviderOptions = {
   apiKey: string;

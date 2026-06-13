@@ -1,10 +1,13 @@
 import type { Plugin } from "vite";
 import { handlePlanRequest } from "./planApi";
+import { createConfiguredPlanProvider, type ProviderEnv } from "./planProvider";
 
-export function mockPlanApiPlugin(): Plugin {
+export function mockPlanApiPlugin(env?: ProviderEnv): Plugin {
   return {
     name: "mock-plan-api",
     configureServer(server) {
+      const provider = createConfiguredPlanProvider(env);
+
       server.middlewares.use("/api/plan", async (request, response) => {
         if ((request as { method?: string }).method !== "POST") {
           sendJson(response, 405, { ok: false, message: "Method not allowed" });
@@ -13,7 +16,7 @@ export function mockPlanApiPlugin(): Plugin {
 
         try {
           const body = await readJsonBody(request);
-          const result = await handlePlanRequest(body);
+          const result = await handlePlanRequest(body, provider);
           sendJson(response, result.status, result.body);
         } catch {
           sendJson(response, 400, { ok: false, message: "Request body must be valid JSON" });
