@@ -373,3 +373,58 @@ type PlanGenerator = (input: PlannerInput) => Promise<PlannerResult>;
 - 示例按钮：`模板示例` 用于快速验证 template 分支，`Mock 示例` 用于快速验证 fallback 错误分支。
 
 这个面板的目的不是替代主绘图入口，而是在接入真实 LLM 前提供可观察的调试窗口。后续模型输出异常时，可以直接比较“模型返回的 plan”和“前端准备执行的 actions”，定位问题属于 prompt、schema、模板命中还是 action 校验。
+
+## LLM Proxy Contract
+
+真实模型调用不放在浏览器内直接完成。前端通过 `src/planner/llmProxyClient.ts` 调用 `/api/plan`，由后端或 serverless 代理读取 API key、调用模型，并返回 `PlannerResult`。
+
+前端请求：
+
+```json
+{
+  "text": "画一个流程图",
+  "responseFormat": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "drawing_plan",
+      "strict": true,
+      "schema": {}
+    }
+  }
+}
+```
+
+成功响应：
+
+```json
+{
+  "ok": true,
+  "source": "llm",
+  "plan": {
+    "type": "plan",
+    "title": "画一个流程图",
+    "steps": []
+  }
+}
+```
+
+失败响应：
+
+```json
+{
+  "ok": false,
+  "message": "quota exceeded"
+}
+```
+
+安全边界：
+
+- 浏览器不保存真实模型 API key。
+- 服务端代理负责读取密钥、调用 provider、处理限流和错误。
+- 前端收到响应后仍然走 `prepareActions` 和 `validateAction`，不信任模型输出直接修改画布。
+
+`proxyPlanGenerator` 实现了 `PlanGenerator` 兼容接口。后续要把 mock planner 替换为真实 provider 时，可以调用：
+
+```ts
+planFromText(text, proxyPlanGenerator)
+```
