@@ -93,11 +93,13 @@ npm.cmd run build
 常用复杂场景会沉淀到 `src/planner/planTemplates.ts`。模板包含：
 
 - `id`: 稳定模板标识，便于后续统计和复用。
+- `category`: 模板层级，如 `scene` 场景或 `object` 物体。
+- `source`: 模板来源，如 `manual` 手工配置或后续的 `vision` 视觉参考生成。
 - `keywords`: 本地命中关键词。
 - `description`: 给人和后续 LLM prompt 阅读的说明。
 - `plan`: 可直接执行的 `DrawingPlan`。
 
-当前内置 `house-scene` 模板，对应“画一幅小房子”。后续可以把 LLM 生成并验证通过的高质量计划沉淀为模板，遇到相似请求时优先本地复用，减少模型调用成本和响应延迟。
+当前内置 `house-scene` 和 `apple-sketch` 模板，分别对应“画一幅小房子”和“画一个苹果”。后续可以把 LLM 生成并验证通过的高质量计划沉淀为模板，遇到相似请求时优先本地复用，减少模型调用成本和响应延迟。
 
 ## DrawingPlan JSON Schema
 
@@ -106,7 +108,7 @@ npm.cmd run build
 - `drawingPlanJsonSchema`: 描述 LLM 需要输出的 `DrawingPlan` 结构。
 - `drawingPlanResponseFormat`: 面向支持 JSON Schema structured output 的模型调用封装。
 
-Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目标引用和安全数值边界。后续接入 LLM 时，应要求模型只输出符合该 schema 的 JSON，再交给 `prepareActions` 和 `validateAction` 做运行时校验。
+Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目标引用和安全数值边界。当前基础图形包含 `circle`、`rect`、`line`、`triangle`、`text`、`ellipse`、`diamond` 和 `star`。后续接入 LLM 时，应要求模型只输出符合该 schema 的 JSON，再交给 `prepareActions` 和 `validateAction` 做运行时校验。
 
 为适配 strict structured output，schema 中的对象字段都显式 required；例如步骤没有依赖时，`dependsOn` 输出空数组。
 
@@ -119,7 +121,7 @@ Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目�
 - `PlanGenerator`: 可替换的异步计划生成函数。
 - `planFromText`: 先查本地模板，模板未命中再调用 fallback generator。
 
-当前默认 fallback 是 `mockPlanGenerator`，只返回“暂未接入真实 LLM planner”。后续接入真实模型时，只需要实现新的 `PlanGenerator`，复用同一份 schema 和后续执行管线。
+当前默认 fallback 是 `mockPlanGenerator`，只返回“暂未接入真实 LLM planner”。主绘图入口在规则解析失败时会自动请求 `/api/plan`，因此配置真实 provider 后，像“画一个苹果”“画一辆车”这类本地规则未覆盖的目标也可以由 LLM 拆成可执行的 `DrawingPlan`。后续接入真实模型时，只需要实现新的 `PlanGenerator`，复用同一份 schema 和后续执行管线。
 
 ## Planner 调试面板
 
@@ -207,6 +209,7 @@ LLM_BASE_URL=https://api.openai.com/v1
 - 优先输出坐标位置，便于精确布局。
 - 把复杂需求拆成有顺序的步骤。
 - 使用稳定的步骤 `id` 和只引用前序步骤的 `dependsOn`。
+- 用已支持的基础图形组合真实物体，避免输出不在白名单内的 shape。
 
 Planner 调试面板支持两种模式：
 

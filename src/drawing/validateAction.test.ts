@@ -18,6 +18,23 @@ describe("validateAction", () => {
     expect(validateAction(action)).toEqual({ ok: true });
   });
 
+  it("accepts new sketch-oriented shape kinds", () => {
+    for (const shape of ["ellipse", "diamond", "star"] as const) {
+      expect(
+        validateAction({
+          type: "create",
+          shape,
+          count: 1,
+          props: {
+            color: "#ef4444",
+            size: "medium",
+            position: "center"
+          }
+        })
+      ).toEqual({ ok: true });
+    }
+  });
+
   it("rejects invalid colors", () => {
     const action = {
       type: "create",

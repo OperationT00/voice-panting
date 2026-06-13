@@ -42,15 +42,16 @@ type OpenAiCompatibleProviderOptions = {
 const drawingPlannerSystemPrompt = [
   "You convert voice drawing requests into a valid DrawingPlan JSON object. Return only JSON that matches the provided schema.",
   "Canvas coordinate range: x: 0-1000, y: 0-560.",
+  "Keep object sketches compact: use 3-6 create steps for a single object unless the user explicitly asks for more detail.",
   "Prefer coordinate positions over preset positions so the preview can be laid out precisely.",
   "Break complex requests into ordered steps with concise human-readable titles.",
   "Each step id must be stable, lowercase, and descriptive.",
   "Use dependsOn as an ordered dependency list. dependsOn may only reference earlier step ids.",
   "For diagrams and flows, place items from top to bottom or left to right with clear spacing.",
-  "If the user asks for a real-world object, approximate it with supported primitives: circle, rect, line, triangle, and text.",
+  "If the user asks for a real-world object, approximate it with supported primitives: circle, rect, line, triangle, text, ellipse, diamond, and star.",
   "Root object: { type: \"plan\", title: string, steps: non-empty array }.",
   "Each step: { id: string, title: string, dependsOn: string[], action: DrawingAction }.",
-  "For create actions use: { type: \"create\", shape: circle | rect | line | triangle | text, count: 1-8, props: { color: \"#RRGGBB\", size: \"small\" | \"medium\" | \"large\", position: { x: number, y: number } } }.",
+  "For create actions use: { type: \"create\", shape: circle | rect | line | triangle | text | ellipse | diamond | star, count: 1-8, props: { color: \"#RRGGBB\", size: \"small\" | \"medium\" | \"large\", position: { x: number, y: number } } }.",
   "For objects such as apples, trees, cars, or houses, create multiple simple primitives rather than inventing unsupported shape names.",
   "Use simple SVG-friendly shapes, high-contrast colors, and no extra explanatory text outside the JSON."
 ].join("\n");
@@ -102,7 +103,7 @@ export function createOpenAiCompatiblePlanProvider(options: OpenAiCompatibleProv
           body: JSON.stringify({
             model: options.model,
             response_format: getResponseFormat(baseUrl, request.responseFormat),
-            max_tokens: 2000,
+            max_tokens: 4096,
             messages: [
               {
                 role: "system",

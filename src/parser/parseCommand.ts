@@ -21,7 +21,15 @@ const shapes: Array<[string, ShapeKind]> = [
   ["线", "line"],
   ["横线", "line"],
   ["三角", "triangle"],
-  ["文字", "text"]
+  ["文字", "text"],
+  ["椭圆", "ellipse"],
+  ["ellipse", "ellipse"],
+  ["菱形", "diamond"],
+  ["diamond", "diamond"],
+  ["星星", "star"],
+  ["星形", "star"],
+  ["五角星", "star"],
+  ["star", "star"]
 ];
 
 const numberWords: Record<string, number> = {

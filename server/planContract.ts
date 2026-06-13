@@ -103,7 +103,7 @@ function isSupportedAction(action: Record<string, unknown>): boolean {
 
   if (action.type === "create") {
     return (
-      ["circle", "rect", "line", "triangle", "text"].includes(String(action.shape)) &&
+      ["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star"].includes(String(action.shape)) &&
       Number.isInteger(action.count) &&
       Number(action.count) >= 1 &&
       Number(action.count) <= 8 &&

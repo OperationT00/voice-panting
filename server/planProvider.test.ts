@@ -121,10 +121,11 @@ describe("createOpenAiCompatiblePlanProvider", () => {
 
     const body = JSON.parse(fetcher.mock.calls[0][1].body);
     expect(body.response_format).toEqual({ type: "json_object" });
-    expect(body.max_tokens).toBe(2000);
+    expect(body.max_tokens).toBe(4096);
     expect(body.messages[0].content).toContain("JSON object");
+    expect(body.messages[0].content).toContain("use 3-6 create steps");
     expect(body.messages[0].content).toContain("Root object");
-    expect(body.messages[0].content).toContain("shape: circle | rect | line | triangle | text");
+    expect(body.messages[0].content).toContain("shape: circle | rect | line | triangle | text | ellipse | diamond | star");
   });
 
   it("returns a clear error when the provider response is not a valid plan", async () => {
