@@ -32,4 +32,33 @@ describe("SvgCanvas", () => {
     expect(ellipse).toHaveAttribute("stroke", "#14532d");
     expect(ellipse).toHaveAttribute("stroke-width", "4");
   });
+
+  it("renders sketch paths with round strokes", () => {
+    render(
+      <SvgCanvas
+        selectedIds={[]}
+        shapes={[
+          {
+            id: "shape-1",
+            kind: "path",
+            x: 500,
+            y: 280,
+            width: 88,
+            height: 88,
+            color: "#0f172a",
+            strokeWidth: 5,
+            pathData: "M 430 310 Q 500 250 570 310"
+          }
+        ]}
+      />
+    );
+
+    const path = document.querySelector('svg path[d="M 430 310 Q 500 250 570 310"]');
+
+    expect(path).toBeInTheDocument();
+    expect(path).toHaveAttribute("fill", "none");
+    expect(path).toHaveAttribute("stroke", "#0f172a");
+    expect(path).toHaveAttribute("stroke-linecap", "round");
+    expect(path).toHaveAttribute("stroke-linejoin", "round");
+  });
 });

@@ -108,7 +108,7 @@ npm.cmd run build
 - `drawingPlanJsonSchema`: 描述 LLM 需要输出的 `DrawingPlan` 结构。
 - `drawingPlanResponseFormat`: 面向支持 JSON Schema structured output 的模型调用封装。
 
-Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目标引用和安全数值边界。当前基础图形包含 `circle`、`rect`、`line`、`triangle`、`text`、`ellipse`、`diamond` 和 `star`。`create.props` 还支持 `rotation`、`strokeColor` 和 `strokeWidth`，用于画倾斜部件和简笔画轮廓。后续接入 LLM 时，应要求模型只输出符合该 schema 的 JSON，再交给 `prepareActions` 和 `validateAction` 做运行时校验。
+Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目标引用和安全数值边界。当前基础图形包含 `circle`、`rect`、`line`、`triangle`、`text`、`ellipse`、`diamond`、`star` 和 `path`。`create.props` 还支持 `rotation`、`strokeColor`、`strokeWidth` 和 `pathData`，用于画倾斜部件、简笔画轮廓和曲线路径。后续接入 LLM 时，应要求模型只输出符合该 schema 的 JSON，再交给 `prepareActions` 和 `validateAction` 做运行时校验。
 
 为适配 strict structured output，schema 中的对象字段都显式 required；例如步骤没有依赖时，`dependsOn` 输出空数组。
 

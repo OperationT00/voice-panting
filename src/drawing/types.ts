@@ -1,4 +1,4 @@
-export type ShapeKind = "circle" | "rect" | "line" | "triangle" | "text" | "ellipse" | "diamond" | "star";
+export type ShapeKind = "circle" | "rect" | "line" | "triangle" | "text" | "ellipse" | "diamond" | "star" | "path";
 export type ShapeSize = "small" | "medium" | "large";
 export type PresetPosition =
   | "top-left"
@@ -26,6 +26,7 @@ export type ShapeProps = {
   rotation?: number;
   strokeColor?: string;
   strokeWidth?: number;
+  pathData?: string;
 };
 
 export type SpatialTarget = "leftmost" | "rightmost" | "topmost" | "bottommost";
@@ -103,5 +104,6 @@ export type DrawableShape = {
   rotation?: number;
   strokeColor?: string;
   strokeWidth: number;
+  pathData?: string;
   text?: string;
 };

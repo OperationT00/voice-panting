@@ -1,6 +1,13 @@
 const shapeKindSchema = {
   type: "string",
-  enum: ["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star"]
+  enum: ["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star", "path"]
+} as const;
+
+const pathDataSchema = {
+  type: "string",
+  minLength: 1,
+  maxLength: 300,
+  pattern: "^[MLQCZmlqcz0-9.,\\s-]+$"
 } as const;
 
 const shapeSizeSchema = {
@@ -30,14 +37,15 @@ const shapePositionSchema = {
 const shapePropsSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["color", "size", "position", "rotation", "strokeColor", "strokeWidth"],
+  required: ["color", "size", "position", "rotation", "strokeColor", "strokeWidth", "pathData"],
   properties: {
     color: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
     size: shapeSizeSchema,
     position: shapePositionSchema,
     rotation: { type: "number", minimum: -180, maximum: 180 },
     strokeColor: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
-    strokeWidth: { type: "number", minimum: 0, maximum: 24 }
+    strokeWidth: { type: "number", minimum: 0, maximum: 24 },
+    pathData: pathDataSchema
   }
 } as const;
 
@@ -136,6 +144,14 @@ const partialShapePropsSchema = {
         rotation: { type: "number", minimum: -180, maximum: 180 },
         strokeColor: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
         strokeWidth: { type: "number", minimum: 0, maximum: 24 }
+      }
+    },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["pathData"],
+      properties: {
+        pathData: pathDataSchema
       }
     }
   ]

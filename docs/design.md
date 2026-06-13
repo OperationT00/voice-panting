@@ -313,13 +313,14 @@ Schema 覆盖当前允许模型规划的动作：
 
 暂不允许 LLM 在计划步骤中直接输出 `undo`、`redo` 或 `error`。原因是这些动作更适合由用户即时控制或由系统内部错误处理产生，不适合作为复杂绘图计划的一部分。
 
-当前 `create` 支持的基础图形是 `circle`、`rect`、`line`、`triangle`、`text`、`ellipse`、`diamond` 和 `star`。这让模型可以用更少步骤组合出简笔画物体，例如苹果可以由椭圆主体、圆形高光、矩形果柄和椭圆叶子组成。
+当前 `create` 支持的基础图形是 `circle`、`rect`、`line`、`triangle`、`text`、`ellipse`、`diamond`、`star` 和 `path`。这让模型可以用更少步骤组合出简笔画物体，例如苹果可以由椭圆主体、圆形高光、矩形果柄、椭圆叶子和路径凹陷组成。
 
 `create.props` 还支持简笔画样式字段：
 
 - `rotation`: `-180` 到 `180` 度，用 SVG `rotate(angle cx cy)` 围绕图形中心旋转。
 - `strokeColor`: `#RRGGBB` 描边颜色，用于主体轮廓、叶子边缘、尾翼等。
 - `strokeWidth`: `0` 到 `24` 的描边宽度。
+- `pathData`: `path` 图形专用的 SVG 路径数据，当前只允许 `M`、`L`、`Q`、`C`、`Z` 命令，长度不超过 300 字符，坐标仍限制在画布范围内。
 
 这些字段都是运行时可选的，旧模板和本地规则可以不填写；面向 LLM 的 schema 会要求模型显式输出，减少“漏字段导致结构化输出不稳定”的情况。
 

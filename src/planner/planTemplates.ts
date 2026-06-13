@@ -76,6 +76,23 @@ export const planTemplates: PlanTemplate[] = [
           }
         },
         {
+          id: "apple-notch",
+          title: "画顶部凹陷",
+          dependsOn: ["apple-body"],
+          action: {
+            type: "create",
+            shape: "path",
+            count: 1,
+            props: {
+              color: "#7f1d1d",
+              size: "small",
+              position: { x: 500, y: 245 },
+              pathData: "M 465 235 Q 500 255 535 235",
+              strokeWidth: 4
+            }
+          }
+        },
+        {
           id: "apple-shadow",
           title: "画侧面阴影",
           dependsOn: ["apple-body"],

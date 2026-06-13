@@ -48,10 +48,11 @@ const drawingPlannerSystemPrompt = [
   "Each step id must be stable, lowercase, and descriptive.",
   "Use dependsOn as an ordered dependency list. dependsOn may only reference earlier step ids.",
   "For diagrams and flows, place items from top to bottom or left to right with clear spacing.",
-  "If the user asks for a real-world object, approximate it with supported primitives: circle, rect, line, triangle, text, ellipse, diamond, and star.",
+  "If the user asks for a real-world object, approximate it with supported primitives: circle, rect, line, triangle, text, ellipse, diamond, star, and path.",
   "Root object: { type: \"plan\", title: string, steps: non-empty array }.",
   "Each step: { id: string, title: string, dependsOn: string[], action: DrawingAction }.",
-  "For create actions use: { type: \"create\", shape: circle | rect | line | triangle | text | ellipse | diamond | star, count: 1-8, props: { color: \"#RRGGBB\", size: \"small\" | \"medium\" | \"large\", position: { x: number, y: number }, rotation: -180..180, strokeColor: \"#RRGGBB\", strokeWidth: 0..24 } }.",
+  "For create actions use: { type: \"create\", shape: circle | rect | line | triangle | text | ellipse | diamond | star | path, count: 1-8, props: { color: \"#RRGGBB\", size: \"small\" | \"medium\" | \"large\", position: { x: number, y: number }, rotation: -180..180, strokeColor: \"#RRGGBB\", strokeWidth: 0..24, pathData: string } }.",
+  "For path shapes, pathData may only use M, L, Q, C, and Z commands with canvas coordinates. Use path for curves, smiles, brows, stems, flame contours, and sketch outlines.",
   "Use rotation for leaves, fins, roofs, limbs, and other angled parts. Use strokeColor and strokeWidth for visible sketch outlines.",
   "For objects such as apples, trees, cars, or houses, create multiple simple primitives rather than inventing unsupported shape names.",
   "Use simple SVG-friendly shapes, high-contrast colors, and no extra explanatory text outside the JSON."

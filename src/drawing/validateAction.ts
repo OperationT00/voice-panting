@@ -2,7 +2,7 @@ import type { DrawingAction, PresetPosition, ShapeKind, ShapePosition, ShapeSize
 
 type ValidationResult = { ok: true } | { ok: false; message: string };
 
-const shapes: ShapeKind[] = ["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star"];
+const shapes: ShapeKind[] = ["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star", "path"];
 const sizes: ShapeSize[] = ["small", "medium", "large"];
 const positions: PresetPosition[] = [
   "top-left",
@@ -67,7 +67,14 @@ function validateCreateAction(action: Record<string, unknown>): ValidationResult
   if (!Number.isInteger(action.count) || Number(action.count) < 1 || Number(action.count) > 8) {
     return { ok: false, message: "一次最多创建 8 个图形" };
   }
-  return validateShapeProps(action.props, true);
+  const propsResult = validateShapeProps(action.props, true);
+  if (!propsResult.ok) {
+    return propsResult;
+  }
+  if (action.shape === "path" && (!isRecord(action.props) || action.props.pathData === undefined)) {
+    return { ok: false, message: "路径数据格式无效" };
+  }
+  return { ok: true };
 }
 
 function validateTargetAction(action: Record<string, unknown>, needsProps: boolean): ValidationResult {
@@ -125,6 +132,37 @@ function validateShapeProps(value: unknown, requireAll: boolean): ValidationResu
   if ((requireAll || value.strokeWidth !== undefined) && value.strokeWidth !== undefined && !isSafeStrokeWidth(value.strokeWidth)) {
     return { ok: false, message: "描边宽度超出安全范围" };
   }
+  if (value.pathData !== undefined) {
+    return validatePathData(value.pathData);
+  }
+  return { ok: true };
+}
+
+function validatePathData(value: unknown): ValidationResult {
+  if (typeof value !== "string" || value.length < 1 || value.length > 300) {
+    return { ok: false, message: "路径数据格式无效" };
+  }
+  if (!/^[MLQCZmlqcz0-9.,\s-]+$/.test(value)) {
+    return { ok: false, message: "路径数据包含不支持的命令" };
+  }
+
+  const commands = value.match(/[A-Za-z]/g) ?? [];
+  if (commands.some((command) => !["M", "L", "Q", "C", "Z", "m", "l", "q", "c", "z"].includes(command))) {
+    return { ok: false, message: "路径数据包含不支持的命令" };
+  }
+
+  const numbers = value.match(/-?\d+(?:\.\d+)?/g)?.map(Number) ?? [];
+  if (numbers.some((number) => !Number.isFinite(number))) {
+    return { ok: false, message: "路径数据格式无效" };
+  }
+  for (let index = 0; index < numbers.length; index += 2) {
+    const x = numbers[index];
+    const y = numbers[index + 1];
+    if (x === undefined || y === undefined || x < 0 || x > 1000 || y < 0 || y > 560) {
+      return { ok: false, message: "路径坐标超出画布范围" };
+    }
+  }
+
   return { ok: true };
 }
 

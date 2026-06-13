@@ -35,6 +35,52 @@ describe("validateAction", () => {
     }
   });
 
+  it("accepts safe path data for sketch paths", () => {
+    expect(
+      validateAction({
+        type: "create",
+        shape: "path",
+        count: 1,
+        props: {
+          color: "#0f172a",
+          size: "medium",
+          position: { x: 500, y: 280 },
+          pathData: "M 430 310 Q 500 250 570 310"
+        }
+      })
+    ).toEqual({ ok: true });
+  });
+
+  it("rejects unsafe path data", () => {
+    expect(
+      validateAction({
+        type: "create",
+        shape: "path",
+        count: 1,
+        props: {
+          color: "#0f172a",
+          size: "medium",
+          position: { x: 500, y: 280 },
+          pathData: "M 0 0 A 40 40 0 0 1 80 80"
+        }
+      })
+    ).toEqual({ ok: false, message: "路径数据包含不支持的命令" });
+
+    expect(
+      validateAction({
+        type: "create",
+        shape: "path",
+        count: 1,
+        props: {
+          color: "#0f172a",
+          size: "medium",
+          position: { x: 500, y: 280 },
+          pathData: "M 0 0 L 2000 20"
+        }
+      })
+    ).toEqual({ ok: false, message: "路径坐标超出画布范围" });
+  });
+
   it("accepts optional sketch style props", () => {
     expect(
       validateAction({

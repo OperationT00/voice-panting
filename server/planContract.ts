@@ -103,18 +103,18 @@ function isSupportedAction(action: Record<string, unknown>): boolean {
 
   if (action.type === "create") {
     return (
-      ["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star"].includes(String(action.shape)) &&
+      ["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star", "path"].includes(String(action.shape)) &&
       Number.isInteger(action.count) &&
       Number(action.count) >= 1 &&
       Number(action.count) <= 8 &&
-      isValidCreateProps(action.props)
+      isValidCreateProps(action.props, String(action.shape))
     );
   }
 
   return ["update", "delete", "move", "resize", "bringToFront", "sendToBack", "clear", "export"].includes(action.type);
 }
 
-function isValidCreateProps(value: unknown): boolean {
+function isValidCreateProps(value: unknown, shape: string): boolean {
   if (!isRecord(value)) {
     return false;
   }
@@ -125,7 +125,9 @@ function isValidCreateProps(value: unknown): boolean {
     isValidPosition(value.position) &&
     (value.rotation === undefined || isSafeRotation(value.rotation)) &&
     (value.strokeColor === undefined || isHexColor(value.strokeColor)) &&
-    (value.strokeWidth === undefined || isSafeStrokeWidth(value.strokeWidth))
+    (value.strokeWidth === undefined || isSafeStrokeWidth(value.strokeWidth)) &&
+    (shape !== "path" || isSafePathData(value.pathData)) &&
+    (value.pathData === undefined || isSafePathData(value.pathData))
   );
 }
 
@@ -157,6 +159,33 @@ function isSafeRotation(value: unknown): value is number {
 
 function isSafeStrokeWidth(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 24;
+}
+
+function isSafePathData(value: unknown): value is string {
+  if (typeof value !== "string" || value.length < 1 || value.length > 300) {
+    return false;
+  }
+  if (!/^[MLQCZmlqcz0-9.,\s-]+$/.test(value)) {
+    return false;
+  }
+  const commands = value.match(/[A-Za-z]/g) ?? [];
+  if (commands.some((command) => !["M", "L", "Q", "C", "Z", "m", "l", "q", "c", "z"].includes(command))) {
+    return false;
+  }
+
+  const numbers = value.match(/-?\d+(?:\.\d+)?/g)?.map(Number) ?? [];
+  if (numbers.some((number) => !Number.isFinite(number))) {
+    return false;
+  }
+  for (let index = 0; index < numbers.length; index += 2) {
+    const x = numbers[index];
+    const y = numbers[index + 1];
+    if (x === undefined || y === undefined || x < 0 || x > 1000 || y < 0 || y > 560) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

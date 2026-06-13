@@ -18,6 +18,9 @@ const shapes: Array<[string, ShapeKind]> = [
   ["矩形", "rect"],
   ["方形", "rect"],
   ["正方形", "rect"],
+  ["曲线", "path"],
+  ["路径", "path"],
+  ["path", "path"],
   ["线", "line"],
   ["横线", "line"],
   ["三角", "triangle"],
@@ -96,6 +99,7 @@ export function parseCommand(rawText: string): DrawingInput {
   if (/画|绘制|添加/.test(text)) {
     const shape = pickShape(text);
     if (shape) {
+      const pathData = shape === "path" ? { pathData: "M 430 310 Q 500 250 570 310", strokeWidth: 5 } : {};
       return [
         {
           type: "create",
@@ -104,7 +108,8 @@ export function parseCommand(rawText: string): DrawingInput {
           props: {
             color: pickColor(text) ?? "#111827",
             size: pickSize(text),
-            position: pickPosition(text)
+            position: pickPosition(text),
+            ...pathData
           }
         }
       ];

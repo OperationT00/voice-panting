@@ -47,6 +47,23 @@ describe("parseCommand", () => {
     ]);
   });
 
+  it("creates a default sketch curve path", () => {
+    expect(parseCommand("画一条黑色曲线")).toEqual([
+      {
+        type: "create",
+        shape: "path",
+        count: 1,
+        props: {
+          color: "#111827",
+          size: "medium",
+          position: "center",
+          pathData: "M 430 310 Q 500 250 570 310",
+          strokeWidth: 5
+        }
+      }
+    ]);
+  });
+
   it("updates the last shape color", () => {
     expect(parseCommand("把刚才的图形改成紫色")).toEqual([
       {
