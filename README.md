@@ -170,3 +170,12 @@ Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目�
 ```
 
 `src/planner/llmProxyClient.ts` 提供 `callLlmPlannerProxy` 和 `proxyPlanGenerator`。后续真实 provider 接入时，可以把 `proxyPlanGenerator` 作为 `planFromText` 的 fallback generator。
+
+本地开发环境已通过 Vite middleware 提供 mock `/api/plan`：
+
+- `POST /api/plan`
+- 请求包含 `text` 和 `responseFormat`
+- 文本包含“流程图”时返回一个固定流程图 `DrawingPlan`
+- 其他文本返回 mock 未配置真实 provider 的错误
+
+这个 endpoint 只用于本地联调，不读取真实 API key。
