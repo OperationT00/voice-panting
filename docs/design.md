@@ -312,3 +312,39 @@ Schema 覆盖当前允许模型规划的动作：
 这层 schema 是第一道约束，目标是减少模型输出非法 JSON 或未知字段。`prepareActions` 和 `validateAction` 仍然是执行前的第二道校验，用来防止越界坐标、过大位移、未知目标引用等运行时风险。
 
 为了适配 strict structured output，schema 中的 object 都显式要求所有声明字段。对业务上可选的内容采用可执行约定处理：例如步骤没有依赖时，`dependsOn` 输出空数组；按类型引用目标时，可以选择只输出 `{ "kind": "circle" }`，也可以输出 `{ "kind": "circle", "index": 2 }`。
+
+## LLM Planner Adapter
+
+`src/planner/llmPlanner.ts` 是真实大模型接入前的适配层。它定义统一接口，但暂不绑定具体 provider。
+
+核心类型：
+
+```ts
+type PlannerInput = {
+  text: string;
+  responseFormat: typeof drawingPlanResponseFormat;
+};
+
+type PlannerResult =
+  | { ok: true; source: "template" | "llm" | "mock"; plan: DrawingPlan }
+  | { ok: false; message: string };
+
+type PlanGenerator = (input: PlannerInput) => Promise<PlannerResult>;
+```
+
+当前流程：
+
+```text
+用户复杂文本
+  -> planFromText
+  -> findPlanTemplate
+  -> 模板命中：返回 template plan
+  -> 模板未命中：调用 fallback PlanGenerator
+```
+
+默认 fallback 是 `mockPlanGenerator`，只返回“暂未接入真实 LLM planner”。这样可以先把接口边界、测试和文档固定下来，后续接入 OpenAI、DeepSeek、通义等 provider 时，只需要新增一个实现 `PlanGenerator` 的函数。
+
+真实 LLM planner 需要遵守两条边界：
+
+- 输入阶段使用 `drawingPlanResponseFormat` 约束模型输出。
+- 输出阶段仍然交给 `prepareActions` 和 `validateAction` 做运行时校验。
