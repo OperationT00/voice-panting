@@ -195,3 +195,5 @@ Planner 调试面板支持两种模式：
 
 - `本地 Planner`：先命中本地模板，未命中时返回本地 fallback。
 - `/api/plan`：直接请求本地代理 endpoint，用于验证 mock 或真实 provider 返回的 `DrawingPlan`。
+
+调试面板返回计划后不会自动修改画布。用户可以先检查计划步骤、Plan JSON 和 Prepared Actions，确认无误后点击 `应用计划`，再把计划展开成绘图动作并写入画布。

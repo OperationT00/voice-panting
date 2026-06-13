@@ -114,4 +114,46 @@ describe("App", () => {
     expect(screen.getByText(/"id": "flow-start"/)).toBeInTheDocument();
     expect(screen.getByText(/Prepared Actions/)).toBeInTheDocument();
   });
+
+  it("previews an api plan before applying it to the canvas", async () => {
+    const user = userEvent.setup();
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        source: "llm",
+        plan: {
+          type: "plan",
+          title: "画一个流程图",
+          steps: [
+            {
+              id: "flow-start",
+              title: "画开始节点",
+              dependsOn: [],
+              action: {
+                type: "create",
+                shape: "rect",
+                count: 1,
+                props: { color: "#2563eb", size: "medium", position: { x: 500, y: 160 } }
+              }
+            }
+          ]
+        }
+      })
+    });
+    vi.stubGlobal("fetch", fetcher);
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "/api/plan" }));
+    await user.type(screen.getByLabelText("Planner 调试输入"), "画一个复杂流程图");
+    await user.click(screen.getByRole("button", { name: "运行 Planner" }));
+
+    expect(screen.getByText("画开始节点")).toBeInTheDocument();
+    expect(document.querySelector('svg rect[fill="#2563eb"]')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "应用计划" }));
+
+    expect(document.querySelector('svg rect[fill="#2563eb"]')).toBeInTheDocument();
+    expect(screen.getByLabelText("最近一次 Action JSON")).toHaveTextContent('"id": "flow-start"');
+  });
 });

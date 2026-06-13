@@ -497,3 +497,28 @@ Planner 调试面板提供两个模式：
 ```
 
 真实模型接入后，可以先在 `/api/plan` 模式检查模型输出、schema 兼容性和 prepared actions，再决定是否把执行入口切到真实 provider。
+
+## Plan Preview And Apply Flow
+
+LLM 或 mock provider 返回 `DrawingPlan` 后，调试面板先进入预览状态，不会立即修改画布。预览内容包括：
+
+- 计划来源 `source`
+- 步骤标题列表
+- 原始 `Plan JSON`
+- 经 `prepareActions` 展开的 `Prepared Actions`
+
+用户点击 `应用计划` 后，App 才会把该 `DrawingPlan` 写入 `lastInput`，并逐条 dispatch 展开的绘图动作。这样可以避免模型虽然满足 JSON Schema、但语义或布局不符合预期时直接污染画布。
+
+执行链路：
+
+```text
+text
+  -> /api/plan
+  -> DrawingPlan preview
+  -> user confirms
+  -> prepareActions
+  -> drawingReducer
+  -> canvas
+```
+
+这也是复杂指令能力的展示点：模型负责拆解和排序，人可以在执行前看到“将画什么、按什么顺序画”。

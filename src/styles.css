@@ -268,6 +268,28 @@ h2 {
   font-size: 13px;
 }
 
+.plan-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid #d9e2ee;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f8fafc;
+}
+
+.plan-preview ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #334155;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.plan-preview button {
+  width: 100%;
+}
+
 .planner-error {
   color: #be123c;
   font-size: 14px;

@@ -1,12 +1,17 @@
 import { useState } from "react";
 import { Send } from "lucide-react";
 import { prepareActions } from "../drawing/actionPipeline";
+import type { DrawingPlan } from "../drawing/types";
 import { planFromText, type PlannerResult } from "../planner/llmPlanner";
 import { callLlmPlannerProxy } from "../planner/llmProxyClient";
 
 type PlannerDebugMode = "local" | "api";
 
-export function PlannerDebugPanel() {
+type Props = {
+  onApplyPlan?: (plan: DrawingPlan) => void;
+};
+
+export function PlannerDebugPanel({ onApplyPlan }: Props) {
   const [text, setText] = useState("");
   const [mode, setMode] = useState<PlannerDebugMode>("local");
   const [result, setResult] = useState<PlannerResult | undefined>();
@@ -81,6 +86,19 @@ export function PlannerDebugPanel() {
       {result?.ok ? (
         <div className="planner-result">
           <strong>source: {result.source}</strong>
+          <div className="plan-preview">
+            <h3>计划预览</h3>
+            <ol>
+              {result.plan.steps.map((step) => (
+                <li key={step.id}>{step.title}</li>
+              ))}
+            </ol>
+            {onApplyPlan ? (
+              <button className="primary" onClick={() => onApplyPlan(result.plan)} type="button">
+                应用计划
+              </button>
+            ) : null}
+          </div>
           <h3>Plan JSON</h3>
           <pre>{JSON.stringify(result.plan, null, 2)}</pre>
           <h3>Prepared Actions</h3>
