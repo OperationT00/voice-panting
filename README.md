@@ -179,3 +179,14 @@ Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目�
 - 其他文本返回 mock 未配置真实 provider 的错误
 
 这个 endpoint 只用于本地联调，不读取真实 API key。
+
+## LLM Provider Adapter
+
+`/api/plan` 现在通过 `server/planProvider.ts` 选择计划生成来源：
+
+- 未配置 `LLM_API_KEY` / `OPENAI_API_KEY` 时，继续使用本地 mock fallback。
+- 配置 API key 后，调用 OpenAI-compatible Chat Completions endpoint。
+- `LLM_MODEL` / `OPENAI_MODEL` 控制模型名称，默认是 `gpt-4.1-mini`。
+- `LLM_BASE_URL` / `OPENAI_BASE_URL` 控制兼容接口地址，默认是 `https://api.openai.com/v1`。
+
+可以复制 `.env.example` 为 `.env` 后填写本地密钥。真实密钥只会在 Vite dev server 侧读取，不会进入浏览器代码。
