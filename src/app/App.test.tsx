@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 
 vi.mock("../speech/speechSynthesis", () => ({
@@ -9,6 +9,10 @@ vi.mock("../speech/speechSynthesis", () => ({
 }));
 
 describe("App", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("uses typed text as a simulated voice command", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -64,5 +68,50 @@ describe("App", () => {
     await user.click(screen.getByRole("button", { name: "运行 Planner" }));
 
     expect(screen.getByText("暂未接入真实 LLM planner")).toBeInTheDocument();
+  });
+
+  it("runs planner debug through the api plan proxy mode", async () => {
+    const user = userEvent.setup();
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        source: "llm",
+        plan: {
+          type: "plan",
+          title: "画一个流程图",
+          steps: [
+            {
+              id: "flow-start",
+              title: "画开始节点",
+              dependsOn: [],
+              action: {
+                type: "create",
+                shape: "rect",
+                count: 1,
+                props: { color: "#2563eb", size: "medium", position: { x: 500, y: 160 } }
+              }
+            }
+          ]
+        }
+      })
+    });
+    vi.stubGlobal("fetch", fetcher);
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "/api/plan" }));
+    await user.type(screen.getByLabelText("Planner 调试输入"), "画一个复杂流程图");
+    await user.click(screen.getByRole("button", { name: "运行 Planner" }));
+
+    expect(fetcher).toHaveBeenCalledWith(
+      "/api/plan",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining("画一个复杂流程图")
+      })
+    );
+    expect(screen.getByText("source: llm")).toBeInTheDocument();
+    expect(screen.getByText(/"id": "flow-start"/)).toBeInTheDocument();
+    expect(screen.getByText(/Prepared Actions/)).toBeInTheDocument();
   });
 });

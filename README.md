@@ -190,3 +190,8 @@ Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目�
 - `LLM_BASE_URL` / `OPENAI_BASE_URL` 控制兼容接口地址，默认是 `https://api.openai.com/v1`。
 
 可以复制 `.env.example` 为 `.env` 后填写本地密钥。真实密钥只会在 Vite dev server 侧读取，不会进入浏览器代码。
+
+Planner 调试面板支持两种模式：
+
+- `本地 Planner`：先命中本地模板，未命中时返回本地 fallback。
+- `/api/plan`：直接请求本地代理 endpoint，用于验证 mock 或真实 provider 返回的 `DrawingPlan`。
