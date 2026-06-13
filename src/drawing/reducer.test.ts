@@ -57,6 +57,27 @@ describe("drawingReducer", () => {
     });
   });
 
+  it("creates sketch paths with path data", () => {
+    const state = drawingReducer(createInitialDrawingState(), {
+      type: "create",
+      shape: "path",
+      count: 1,
+      props: {
+        color: "#0f172a",
+        size: "medium",
+        position: { x: 500, y: 280 },
+        pathData: "M 430 310 Q 500 250 570 310",
+        strokeWidth: 5
+      }
+    });
+
+    expect(state.shapes[0]).toMatchObject({
+      kind: "path",
+      pathData: "M 430 310 Q 500 250 570 310",
+      strokeWidth: 5
+    });
+  });
+
   it("updates the selected shape color", () => {
     const created = drawingReducer(createInitialDrawingState(), {
       type: "create",

@@ -59,4 +59,58 @@ describe("hasValidPlanShape", () => {
 
     expect(hasValidPlanShape(plan)).toBe(false);
   });
+
+  it("accepts safe sketch path data", () => {
+    const plan: ServerDrawingPlan = {
+      type: "plan",
+      title: "Smile",
+      steps: [
+        {
+          id: "smile",
+          title: "Draw a smile curve",
+          dependsOn: [],
+          action: {
+            type: "create",
+            shape: "path",
+            count: 1,
+            props: {
+              color: "#0f172a",
+              size: "medium",
+              position: { x: 500, y: 280 },
+              pathData: "M 430 310 Q 500 250 570 310"
+            }
+          }
+        }
+      ]
+    };
+
+    expect(hasValidPlanShape(plan)).toBe(true);
+  });
+
+  it("rejects unsupported sketch path commands", () => {
+    const plan: ServerDrawingPlan = {
+      type: "plan",
+      title: "Arc",
+      steps: [
+        {
+          id: "arc",
+          title: "Draw an unsupported arc",
+          dependsOn: [],
+          action: {
+            type: "create",
+            shape: "path",
+            count: 1,
+            props: {
+              color: "#0f172a",
+              size: "medium",
+              position: { x: 500, y: 280 },
+              pathData: "M 0 0 A 40 40 0 0 1 80 80"
+            }
+          }
+        }
+      ]
+    };
+
+    expect(hasValidPlanShape(plan)).toBe(false);
+  });
 });

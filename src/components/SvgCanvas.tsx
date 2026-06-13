@@ -108,6 +108,21 @@ function ShapeView({ shape, selected }: { shape: DrawableShape; selected: boolea
     );
   }
 
+  if (shape.kind === "path") {
+    return (
+      <g transform={transform}>
+        <path
+          d={shape.pathData ?? ""}
+          fill="none"
+          stroke={shape.strokeColor ?? shape.color}
+          strokeWidth={shape.strokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
+    );
+  }
+
   if (shape.kind === "triangle") {
     const points = [
       [shape.x, shape.y - shape.height / 2],

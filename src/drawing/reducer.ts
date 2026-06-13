@@ -33,6 +33,7 @@ export function drawingReducer(state: DrawingState, action: DrawingAction): Draw
         action.props.rotation,
         action.props.strokeColor,
         action.props.strokeWidth,
+        action.props.pathData,
         state.nextId
       );
       return commit(state, [...state.shapes, ...created], {
@@ -166,6 +167,7 @@ function createShapes(
   rotation: number | undefined,
   strokeColor: string | undefined,
   strokeWidth: number | undefined,
+  pathData: string | undefined,
   firstId: number
 ): DrawableShape[] {
   const points = getPoints(count, position);
@@ -181,7 +183,8 @@ function createShapes(
       color,
       rotation: rotation ?? 0,
       strokeColor,
-      strokeWidth: strokeWidth ?? 6
+      strokeWidth: strokeWidth ?? 6,
+      pathData
     };
   });
 }
@@ -192,7 +195,8 @@ function updateShapeProps(shape: DrawableShape, props: Partial<ShapeProps>): Dra
     color: props.color ?? shape.color,
     rotation: props.rotation ?? shape.rotation,
     strokeColor: props.strokeColor ?? shape.strokeColor,
-    strokeWidth: props.strokeWidth ?? shape.strokeWidth
+    strokeWidth: props.strokeWidth ?? shape.strokeWidth,
+    pathData: props.pathData ?? shape.pathData
   };
 }
 

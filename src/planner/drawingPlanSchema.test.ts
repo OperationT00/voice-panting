@@ -39,8 +39,14 @@ describe("drawingPlanJsonSchema", () => {
   it("keeps enums in sync with drawing action constraints", () => {
     const createAction = drawingPlanJsonSchema.properties.steps.items.properties.action.oneOf[0];
 
-    expect(createAction.properties.shape.enum).toEqual(["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star"]);
+    expect(createAction.properties.shape.enum).toEqual(["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star", "path"]);
     expect(createAction.properties.props.properties.size.enum).toEqual(["small", "medium", "large"]);
+    expect(createAction.properties.props.properties.pathData).toEqual({
+      type: "string",
+      minLength: 1,
+      maxLength: 300,
+      pattern: "^[MLQCZmlqcz0-9.,\\s-]+$"
+    });
     expect(createAction.properties.props.properties.rotation).toEqual({ type: "number", minimum: -180, maximum: 180 });
     expect(createAction.properties.props.properties.strokeColor).toEqual({ type: "string", pattern: "^#[0-9a-fA-F]{6}$" });
     expect(createAction.properties.props.properties.strokeWidth).toEqual({ type: "number", minimum: 0, maximum: 24 });
