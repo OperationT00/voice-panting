@@ -30,11 +30,14 @@ const shapePositionSchema = {
 const shapePropsSchema = {
   type: "object",
   additionalProperties: false,
-  required: ["color", "size", "position"],
+  required: ["color", "size", "position", "rotation", "strokeColor", "strokeWidth"],
   properties: {
     color: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
     size: shapeSizeSchema,
-    position: shapePositionSchema
+    position: shapePositionSchema,
+    rotation: { type: "number", minimum: -180, maximum: 180 },
+    strokeColor: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
+    strokeWidth: { type: "number", minimum: 0, maximum: 24 }
   }
 } as const;
 
@@ -99,6 +102,40 @@ const partialShapePropsSchema = {
         color: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
         size: shapeSizeSchema,
         position: shapePositionSchema
+      }
+    },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["rotation"],
+      properties: {
+        rotation: { type: "number", minimum: -180, maximum: 180 }
+      }
+    },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["strokeColor"],
+      properties: {
+        strokeColor: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" }
+      }
+    },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["strokeWidth"],
+      properties: {
+        strokeWidth: { type: "number", minimum: 0, maximum: 24 }
+      }
+    },
+    {
+      type: "object",
+      additionalProperties: false,
+      required: ["rotation", "strokeColor", "strokeWidth"],
+      properties: {
+        rotation: { type: "number", minimum: -180, maximum: 180 },
+        strokeColor: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
+        strokeWidth: { type: "number", minimum: 0, maximum: 24 }
       }
     }
   ]

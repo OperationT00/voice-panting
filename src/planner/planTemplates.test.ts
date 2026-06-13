@@ -65,6 +65,7 @@ describe("planTemplates", () => {
     expect(appleTemplate).toMatchObject({ category: "object", source: "manual" });
     expect(plan?.steps.map((step) => step.id)).toEqual(["apple-body", "apple-shadow", "apple-stem", "apple-leaf", "apple-highlight"]);
     expect(plan?.steps.map((step) => step.action.type)).toEqual(["create", "create", "create", "create", "create"]);
-    expect(plan?.steps[0].action).toMatchObject({ shape: "ellipse" });
+    expect(plan?.steps[0].action).toMatchObject({ shape: "ellipse", props: { strokeColor: "#7f1d1d", strokeWidth: 3 } });
+    expect(plan?.steps[3].action).toMatchObject({ shape: "ellipse", props: { rotation: -28, strokeColor: "#14532d", strokeWidth: 3 } });
   });
 });

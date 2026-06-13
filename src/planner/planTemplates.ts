@@ -72,7 +72,7 @@ export const planTemplates: PlanTemplate[] = [
             type: "create",
             shape: "ellipse",
             count: 1,
-            props: { color: "#dc2626", size: "large", position: { x: 500, y: 315 } }
+            props: { color: "#dc2626", size: "large", position: { x: 500, y: 315 }, rotation: 0, strokeColor: "#7f1d1d", strokeWidth: 3 }
           }
         },
         {
@@ -105,7 +105,7 @@ export const planTemplates: PlanTemplate[] = [
             type: "create",
             shape: "ellipse",
             count: 1,
-            props: { color: "#16a34a", size: "small", position: { x: 550, y: 215 } }
+            props: { color: "#16a34a", size: "small", position: { x: 550, y: 215 }, rotation: -28, strokeColor: "#14532d", strokeWidth: 3 }
           }
         },
         {

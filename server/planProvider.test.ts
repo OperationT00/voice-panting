@@ -126,6 +126,8 @@ describe("createOpenAiCompatiblePlanProvider", () => {
     expect(body.messages[0].content).toContain("use 3-6 create steps");
     expect(body.messages[0].content).toContain("Root object");
     expect(body.messages[0].content).toContain("shape: circle | rect | line | triangle | text | ellipse | diamond | star");
+    expect(body.messages[0].content).toContain("rotation");
+    expect(body.messages[0].content).toContain("strokeColor");
   });
 
   it("returns a clear error when the provider response is not a valid plan", async () => {

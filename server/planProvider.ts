@@ -51,7 +51,8 @@ const drawingPlannerSystemPrompt = [
   "If the user asks for a real-world object, approximate it with supported primitives: circle, rect, line, triangle, text, ellipse, diamond, and star.",
   "Root object: { type: \"plan\", title: string, steps: non-empty array }.",
   "Each step: { id: string, title: string, dependsOn: string[], action: DrawingAction }.",
-  "For create actions use: { type: \"create\", shape: circle | rect | line | triangle | text | ellipse | diamond | star, count: 1-8, props: { color: \"#RRGGBB\", size: \"small\" | \"medium\" | \"large\", position: { x: number, y: number } } }.",
+  "For create actions use: { type: \"create\", shape: circle | rect | line | triangle | text | ellipse | diamond | star, count: 1-8, props: { color: \"#RRGGBB\", size: \"small\" | \"medium\" | \"large\", position: { x: number, y: number }, rotation: -180..180, strokeColor: \"#RRGGBB\", strokeWidth: 0..24 } }.",
+  "Use rotation for leaves, fins, roofs, limbs, and other angled parts. Use strokeColor and strokeWidth for visible sketch outlines.",
   "For objects such as apples, trees, cars, or houses, create multiple simple primitives rather than inventing unsupported shape names.",
   "Use simple SVG-friendly shapes, high-contrast colors, and no extra explanatory text outside the JSON."
 ].join("\n");

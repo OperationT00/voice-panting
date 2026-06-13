@@ -116,6 +116,15 @@ function validateShapeProps(value: unknown, requireAll: boolean): ValidationResu
       return positionResult;
     }
   }
+  if ((requireAll || value.rotation !== undefined) && !isSafeRotation(value.rotation)) {
+    return { ok: false, message: "旋转角度超出安全范围" };
+  }
+  if ((requireAll || value.strokeColor !== undefined) && value.strokeColor !== undefined && !isHexColor(value.strokeColor)) {
+    return { ok: false, message: "描边颜色必须是 #RRGGBB 格式" };
+  }
+  if ((requireAll || value.strokeWidth !== undefined) && value.strokeWidth !== undefined && !isSafeStrokeWidth(value.strokeWidth)) {
+    return { ok: false, message: "描边宽度超出安全范围" };
+  }
   return { ok: true };
 }
 
@@ -176,6 +185,14 @@ function isHexColor(value: unknown): value is string {
 
 function isSafeDelta(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= 300;
+}
+
+function isSafeRotation(value: unknown): value is number {
+  return value === undefined || (typeof value === "number" && Number.isFinite(value) && value >= -180 && value <= 180);
+}
+
+function isSafeStrokeWidth(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 24;
 }
 
 export function getValidActions(actions: DrawingAction[]): DrawingAction[] {
