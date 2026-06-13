@@ -194,7 +194,8 @@ h2 {
   padding: 0;
 }
 
-.action-json-panel pre {
+.action-json-panel pre,
+.planner-debug-panel pre {
   margin: 0;
   max-height: 220px;
   overflow: auto;
@@ -207,6 +208,44 @@ h2 {
   line-height: 1.55;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.planner-debug-panel .simulate-row {
+  grid-template-columns: minmax(0, 1fr) minmax(120px, auto);
+}
+
+.planner-debug-samples {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.planner-debug-samples button {
+  min-height: 34px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.planner-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.planner-result strong {
+  color: #0f766e;
+  font-size: 13px;
+}
+
+.planner-result h3 {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.planner-error {
+  color: #be123c;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .transcript {

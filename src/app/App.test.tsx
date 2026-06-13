@@ -42,4 +42,27 @@ describe("App", () => {
     expect(document.querySelector('svg polygon[fill="#ef4444"]')).toBeInTheDocument();
     expect(document.querySelector('svg circle[fill="#eab308"]')).toBeInTheDocument();
   });
+
+  it("shows planner debug result for a template command", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(screen.getByLabelText("Planner 调试输入"), "画一幅小房子");
+    await user.click(screen.getByRole("button", { name: "运行 Planner" }));
+
+    expect(screen.getByText("source: template")).toBeInTheDocument();
+    expect(screen.getByText(/"type": "plan"/)).toBeInTheDocument();
+    expect(screen.getByText(/"id": "house-body"/)).toBeInTheDocument();
+    expect(screen.getByText(/Prepared Actions/)).toBeInTheDocument();
+  });
+
+  it("shows planner debug error for an unmatched command", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(screen.getByLabelText("Planner 调试输入"), "画一个复杂流程图");
+    await user.click(screen.getByRole("button", { name: "运行 Planner" }));
+
+    expect(screen.getByText("暂未接入真实 LLM planner")).toBeInTheDocument();
+  });
 });
