@@ -214,6 +214,32 @@ h2 {
   grid-template-columns: minmax(0, 1fr) minmax(120px, auto);
 }
 
+.planner-mode-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.planner-mode-toggle button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 0;
+  font-size: 13px;
+}
+
+.planner-mode-toggle button + button {
+  border-left: 1px solid #cbd5e1;
+}
+
+.planner-mode-toggle button.active {
+  background: #0f766e;
+  color: #ffffff;
+  font-weight: 700;
+}
+
 .planner-debug-samples {
   display: grid;
   grid-template-columns: 1fr 1fr;

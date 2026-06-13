@@ -478,3 +478,22 @@ LLM_BASE_URL=https://api.openai.com/v1
 - 把 Chat Completions provider 替换或扩展为 Responses API provider。
 - 为不同模型供应商增加独立 provider，例如 Qwen / DeepSeek / Moonshot。
 - 在 provider 层记录 token、耗时、fallback 原因，服务成本控制文档可直接引用。
+
+## Planner Debug Modes
+
+Planner 调试面板提供两个模式：
+
+- `本地 Planner`：调用 `planFromText`，用于验证本地模板、规则 fallback 和 action pipeline。
+- `/api/plan`：调用 `callLlmPlannerProxy`，直接请求服务端代理 endpoint，用于验证 mock provider 或真实模型 provider 返回的 `DrawingPlan`。
+
+这个切换让调试链路更清晰：
+
+```text
+本地 Planner:
+  text -> template / local fallback -> DrawingPlan
+
+/api/plan:
+  text -> frontend proxy client -> server provider -> DrawingPlan
+```
+
+真实模型接入后，可以先在 `/api/plan` 模式检查模型输出、schema 兼容性和 prepared actions，再决定是否把执行入口切到真实 provider。
