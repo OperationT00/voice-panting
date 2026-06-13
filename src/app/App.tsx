@@ -7,6 +7,7 @@ import { speak } from "../speech/speechSynthesis";
 import { SvgCanvas } from "../components/SvgCanvas";
 import { ActionLog } from "../components/ActionLog";
 import { ActionJsonPanel } from "../components/ActionJsonPanel";
+import { PlannerDebugPanel } from "../components/PlannerDebugPanel";
 import type { DrawingAction, DrawingInput } from "../drawing/types";
 import { exportSvgElement } from "../drawing/exportSvg";
 import { prepareActions } from "../drawing/actionPipeline";
@@ -149,6 +150,7 @@ export function App() {
           </div>
         </div>
 
+        <PlannerDebugPanel />
         <ActionLog logs={logs} />
         <ActionJsonPanel input={lastInput} />
       </aside>

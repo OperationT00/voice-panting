@@ -120,3 +120,17 @@ Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目�
 - `planFromText`: 先查本地模板，模板未命中再调用 fallback generator。
 
 当前默认 fallback 是 `mockPlanGenerator`，只返回“暂未接入真实 LLM planner”。后续接入真实模型时，只需要实现新的 `PlanGenerator`，复用同一份 schema 和后续执行管线。
+
+## Planner 调试面板
+
+页面右侧提供 `Planner 调试` 面板，用于在不影响主绘图流程的情况下观察 planner 链路。
+
+输入文本后点击“运行 Planner”，面板会展示：
+
+- planner source，如 `template` 或 `mock`。
+- planner 返回的 `DrawingPlan`。
+- 经过 `prepareActions` 展开后的 actions。
+- fallback 失败时的错误信息。
+
+当前调试面板不会直接执行绘图，只用于验证模板命中、LLM adapter、schema 和 action pipeline 的衔接。
+面板内置“模板示例”和“Mock 示例”按钮，方便在不输入文字时快速验证两条 planner 分支。

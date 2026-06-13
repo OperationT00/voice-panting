@@ -348,3 +348,28 @@ type PlanGenerator = (input: PlannerInput) => Promise<PlannerResult>;
 
 - 输入阶段使用 `drawingPlanResponseFormat` 约束模型输出。
 - 输出阶段仍然交给 `prepareActions` 和 `validateAction` 做运行时校验。
+
+## Planner 调试面板
+
+右侧栏新增 `Planner 调试` 面板，用于观察 planner 链路，但不会直接执行绘图。
+
+调试面板输入文本后，会调用 `planFromText`：
+
+```text
+调试输入
+  -> planFromText
+  -> template / mock / future llm
+  -> DrawingPlan
+  -> prepareActions
+  -> Prepared Actions JSON
+```
+
+展示内容：
+
+- `source`：当前计划来源，例如 `template` 或 `mock`。
+- `Plan JSON`：planner 返回的原始结构化计划。
+- `Prepared Actions`：计划展开并通过 `prepareActions` 后的动作列表。
+- 错误信息：fallback planner 未接入或生成失败时展示。
+- 示例按钮：`模板示例` 用于快速验证 template 分支，`Mock 示例` 用于快速验证 fallback 错误分支。
+
+这个面板的目的不是替代主绘图入口，而是在接入真实 LLM 前提供可观察的调试窗口。后续模型输出异常时，可以直接比较“模型返回的 plan”和“前端准备执行的 actions”，定位问题属于 prompt、schema、模板命中还是 action 校验。
