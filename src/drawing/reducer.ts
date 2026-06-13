@@ -188,6 +188,15 @@ function getDimensions(kind: ShapeKind, size: ShapeSize): { width: number; heigh
   if (kind === "rect") {
     return { width: base * 1.3, height: base };
   }
+  if (kind === "ellipse") {
+    return { width: base * 1.45, height: base };
+  }
+  if (kind === "diamond") {
+    return { width: base * 1.1, height: base * 1.1 };
+  }
+  if (kind === "star") {
+    return { width: base * 1.15, height: base * 1.15 };
+  }
   return { width: base, height: base };
 }
 

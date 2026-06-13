@@ -105,9 +105,51 @@ function ShapeView({ shape, selected }: { shape: DrawableShape; selected: boolea
     return <polygon points={points} fill={shape.color} stroke={outline} strokeWidth={selected ? 4 : 0} />;
   }
 
+  if (shape.kind === "ellipse") {
+    return (
+      <g>
+        <ellipse cx={shape.x} cy={shape.y} rx={shape.width / 2} ry={shape.height / 2} fill={shape.color} />
+        <ellipse
+          cx={shape.x}
+          cy={shape.y}
+          rx={shape.width / 2 + 8}
+          ry={shape.height / 2 + 8}
+          fill="none"
+          stroke={outline}
+          strokeWidth="4"
+        />
+      </g>
+    );
+  }
+
+  if (shape.kind === "diamond") {
+    const points = [
+      [shape.x, shape.y - shape.height / 2],
+      [shape.x + shape.width / 2, shape.y],
+      [shape.x, shape.y + shape.height / 2],
+      [shape.x - shape.width / 2, shape.y]
+    ]
+      .map((point) => point.join(","))
+      .join(" ");
+    return <polygon points={points} fill={shape.color} stroke={outline} strokeWidth={selected ? 4 : 0} />;
+  }
+
+  if (shape.kind === "star") {
+    const points = createStarPoints(shape.x, shape.y, shape.width / 2, shape.width / 4).join(" ");
+    return <polygon points={points} fill={shape.color} stroke={outline} strokeWidth={selected ? 4 : 0} />;
+  }
+
   return (
     <text x={shape.x} y={shape.y} textAnchor="middle" fill={shape.color} fontSize="42" fontWeight="700">
       {shape.text ?? "文本"}
     </text>
   );
+}
+
+function createStarPoints(cx: number, cy: number, outerRadius: number, innerRadius: number): string[] {
+  return Array.from({ length: 10 }, (_, index) => {
+    const angle = -Math.PI / 2 + (index * Math.PI) / 5;
+    const radius = index % 2 === 0 ? outerRadius : innerRadius;
+    return `${cx + Math.cos(angle) * radius},${cy + Math.sin(angle) * radius}`;
+  });
 }

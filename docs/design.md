@@ -271,6 +271,8 @@ SVG 图形使用数组顺序决定绘制顺序。数组中越靠后的图形越�
 ```ts
 type PlanTemplate = {
   id: string;
+  category: "scene" | "object";
+  source: "manual" | "vision";
   keywords: string[];
   description: string;
   plan: DrawingPlan;
@@ -280,11 +282,13 @@ type PlanTemplate = {
 字段用途：
 
 - `id` 是稳定标识，后续可以用于命中统计、模板版本管理和 demo 说明。
+- `category` 描述模板层级，当前先分为 `scene` 场景和 `object` 物体。
+- `source` 描述模板来源，当前内置模板是 `manual`，后续可以扩展为由多模态参考生成的 `vision` 模板。
 - `keywords` 是本地低成本匹配入口。
 - `description` 面向人和后续 LLM prompt，说明模板适合什么场景。
 - `plan` 是可执行的结构化计划。
 
-当前内置 `house-scene`，可以响应“小房子”“房子”“小屋”等表达。`findPlanTemplate` 每次命中都会返回新的 plan 实例，避免执行过程中的状态修改污染原始模板。
+当前内置 `house-scene` 和 `apple-sketch`，可以响应“小房子”“房子”“小屋”“苹果”等表达。`findPlanTemplate` 每次命中都会返回新的 plan 实例，避免执行过程中的状态修改污染原始模板。
 
 这层的后续用途是模板沉淀：LLM 生成的计划如果通过校验、执行效果好、复用价值高，就可以保存为模板。下次遇到相似场景时优先走本地模板，减少模型调用成本和响应延迟；模板未命中时再走 LLM 规划。
 
@@ -308,6 +312,8 @@ Schema 覆盖当前允许模型规划的动作：
 - `export`
 
 暂不允许 LLM 在计划步骤中直接输出 `undo`、`redo` 或 `error`。原因是这些动作更适合由用户即时控制或由系统内部错误处理产生，不适合作为复杂绘图计划的一部分。
+
+当前 `create` 支持的基础图形是 `circle`、`rect`、`line`、`triangle`、`text`、`ellipse`、`diamond` 和 `star`。这让模型可以用更少步骤组合出简笔画物体，例如苹果可以由椭圆主体、圆形高光、矩形果柄和椭圆叶子组成。
 
 这层 schema 是第一道约束，目标是减少模型输出非法 JSON 或未知字段。`prepareActions` 和 `validateAction` 仍然是执行前的第二道校验，用来防止越界坐标、过大位移、未知目标引用等运行时风险。
 
@@ -522,3 +528,30 @@ text
 ```
 
 这也是复杂指令能力的展示点：模型负责拆解和排序，人可以在执行前看到“将画什么、按什么顺序画”。
+
+## LLM Planner Prompt Rules
+
+真实 provider 的 system prompt 不只要求模型返回 JSON，还会给出绘图规划约束：
+
+- 画布坐标范围固定为 `x: 0-1000`、`y: 0-560`。
+- 优先使用坐标位置，减少抽象位置导致的布局不确定。
+- 复杂指令必须拆成有顺序的步骤。
+- 每个步骤使用稳定、可读、可复用的 `id`。
+- `dependsOn` 只能引用前面已经出现过的步骤 id。
+- 流程图、架构图等场景优先采用从上到下或从左到右的布局。
+- 使用简单 SVG 图形和高对比颜色，避免生成无法执行的说明性文本。
+- 对苹果、树、车、房子等真实物体，必须组合基础图形，不要发明 schema 外的 shape 名称。
+
+这层 prompt 解决“模型知道怎么规划”的问题；`DrawingPlan` JSON Schema 解决“结构是否可解析”的问题；`prepareActions` / `validateAction` 解决“是否允许执行”的问题。三层组合后，真实模型输出不会直接绕过业务校验。
+
+主绘图入口的链路也已经接入兜底：本地规则解析失败时，会自动请求 `/api/plan`；如果真实 provider 已配置，就由 LLM 返回 `DrawingPlan` 并立即走同一套 `prepareActions`、reducer 和 SVG 渲染流程。这样“画一个苹果”这类模板命中的请求可以走本地低成本路径，“画一个还没配置过的物体”则可以走模型规划路径。
+
+密钥配置仍然只放在服务端环境变量里：
+
+```text
+LLM_API_KEY=真实模型密钥
+LLM_MODEL=gpt-4.1-mini
+LLM_BASE_URL=https://api.openai.com/v1
+```
+
+不要使用 `VITE_` 前缀保存模型密钥，因为这类变量会进入浏览器包。

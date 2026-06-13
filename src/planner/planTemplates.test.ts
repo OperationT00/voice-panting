@@ -54,6 +54,17 @@ describe("planTemplates", () => {
     const houseTemplate = planTemplates.find((template) => template.id === "house-scene");
 
     expect(houseTemplate?.keywords).toContain("房子");
+    expect(houseTemplate).toMatchObject({ category: "scene", source: "manual" });
     expect(findPlanTemplate("画一座房子")).not.toHaveProperty("keywords");
+  });
+
+  it("finds an apple sketch template with layered details", () => {
+    const appleTemplate = planTemplates.find((template) => template.id === "apple-sketch");
+    const plan = findPlanTemplate("画一个苹果");
+
+    expect(appleTemplate).toMatchObject({ category: "object", source: "manual" });
+    expect(plan?.steps.map((step) => step.id)).toEqual(["apple-body", "apple-shadow", "apple-stem", "apple-leaf", "apple-highlight"]);
+    expect(plan?.steps.map((step) => step.action.type)).toEqual(["create", "create", "create", "create", "create"]);
+    expect(plan?.steps[0].action).toMatchObject({ shape: "ellipse" });
   });
 });

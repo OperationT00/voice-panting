@@ -39,7 +39,7 @@ describe("drawingPlanJsonSchema", () => {
   it("keeps enums in sync with drawing action constraints", () => {
     const createAction = drawingPlanJsonSchema.properties.steps.items.properties.action.oneOf[0];
 
-    expect(createAction.properties.shape.enum).toEqual(["circle", "rect", "line", "triangle", "text"]);
+    expect(createAction.properties.shape.enum).toEqual(["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star"]);
     expect(createAction.properties.props.properties.size.enum).toEqual(["small", "medium", "large"]);
     expect(createAction.properties.props.properties.position.anyOf[0].enum).toEqual([
       "top-left",

@@ -76,6 +76,58 @@ describe("createOpenAiCompatiblePlanProvider", () => {
     });
   });
 
+  it("sends planning guidance for coordinates, ordered steps, and dependencies", async () => {
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      async json() {
+        return {
+          choices: [{ message: { content: JSON.stringify(validPlan) } }]
+        };
+      }
+    });
+    const provider = createOpenAiCompatiblePlanProvider({ apiKey: "test-key", model: "test-model", fetcher });
+
+    await provider.generatePlan({ text: "draw a login flow", responseFormat: serverDrawingPlanResponseFormat });
+
+    const body = JSON.parse(fetcher.mock.calls[0][1].body);
+    const systemPrompt = body.messages[0].content;
+    expect(systemPrompt).toContain("x: 0-1000");
+    expect(systemPrompt).toContain("y: 0-560");
+    expect(systemPrompt).toContain("Prefer coordinate positions");
+    expect(systemPrompt).toContain("Break complex requests into ordered steps");
+    expect(systemPrompt).toContain("dependsOn");
+    expect(systemPrompt).toContain("reference earlier step ids");
+  });
+
+  it("uses json_object response format for DeepSeek JSON Output", async () => {
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      async json() {
+        return {
+          choices: [{ message: { content: JSON.stringify(validPlan) } }]
+        };
+      }
+    });
+    const provider = createOpenAiCompatiblePlanProvider({
+      apiKey: "test-key",
+      baseUrl: "https://api.deepseek.com",
+      model: "deepseek-v4-pro",
+      fetcher
+    });
+
+    await provider.generatePlan({ text: "draw an apple", responseFormat: serverDrawingPlanResponseFormat });
+
+    const body = JSON.parse(fetcher.mock.calls[0][1].body);
+    expect(body.response_format).toEqual({ type: "json_object" });
+    expect(body.max_tokens).toBe(4096);
+    expect(body.messages[0].content).toContain("JSON object");
+    expect(body.messages[0].content).toContain("use 3-6 create steps");
+    expect(body.messages[0].content).toContain("Root object");
+    expect(body.messages[0].content).toContain("shape: circle | rect | line | triangle | text | ellipse | diamond | star");
+  });
+
   it("returns a clear error when the provider response is not a valid plan", async () => {
     const fetcher = vi.fn().mockResolvedValue({
       ok: true,

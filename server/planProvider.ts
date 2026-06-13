@@ -30,7 +30,7 @@ export type PlanProvider = {
   generatePlan: (request: PlanProviderRequest) => Promise<ServerPlannerResult>;
 };
 
-type ProviderEnv = Record<string, string | undefined>;
+export type ProviderEnv = Record<string, string | undefined>;
 
 type OpenAiCompatibleProviderOptions = {
   apiKey: string;
@@ -38,6 +38,23 @@ type OpenAiCompatibleProviderOptions = {
   model: string;
   fetcher?: Fetcher;
 };
+
+const drawingPlannerSystemPrompt = [
+  "You convert voice drawing requests into a valid DrawingPlan JSON object. Return only JSON that matches the provided schema.",
+  "Canvas coordinate range: x: 0-1000, y: 0-560.",
+  "Keep object sketches compact: use 3-6 create steps for a single object unless the user explicitly asks for more detail.",
+  "Prefer coordinate positions over preset positions so the preview can be laid out precisely.",
+  "Break complex requests into ordered steps with concise human-readable titles.",
+  "Each step id must be stable, lowercase, and descriptive.",
+  "Use dependsOn as an ordered dependency list. dependsOn may only reference earlier step ids.",
+  "For diagrams and flows, place items from top to bottom or left to right with clear spacing.",
+  "If the user asks for a real-world object, approximate it with supported primitives: circle, rect, line, triangle, text, ellipse, diamond, and star.",
+  "Root object: { type: \"plan\", title: string, steps: non-empty array }.",
+  "Each step: { id: string, title: string, dependsOn: string[], action: DrawingAction }.",
+  "For create actions use: { type: \"create\", shape: circle | rect | line | triangle | text | ellipse | diamond | star, count: 1-8, props: { color: \"#RRGGBB\", size: \"small\" | \"medium\" | \"large\", position: { x: number, y: number } } }.",
+  "For objects such as apples, trees, cars, or houses, create multiple simple primitives rather than inventing unsupported shape names.",
+  "Use simple SVG-friendly shapes, high-contrast colors, and no extra explanatory text outside the JSON."
+].join("\n");
 
 export function createConfiguredPlanProvider(env: ProviderEnv = getProcessEnv(), fetcher: Fetcher = getGlobalFetch()): PlanProvider {
   const apiKey = env.LLM_API_KEY ?? env.OPENAI_API_KEY;
@@ -70,7 +87,8 @@ export function createMockPlanProvider(): PlanProvider {
 
 export function createOpenAiCompatiblePlanProvider(options: OpenAiCompatibleProviderOptions): PlanProvider {
   const fetcher = options.fetcher ?? getGlobalFetch();
-  const endpoint = `${normalizeBaseUrl(options.baseUrl ?? "https://api.openai.com/v1")}/chat/completions`;
+  const baseUrl = normalizeBaseUrl(options.baseUrl ?? "https://api.openai.com/v1");
+  const endpoint = `${baseUrl}/chat/completions`;
 
   return {
     name: "openai-compatible",
@@ -84,12 +102,12 @@ export function createOpenAiCompatiblePlanProvider(options: OpenAiCompatibleProv
           },
           body: JSON.stringify({
             model: options.model,
-            response_format: request.responseFormat ?? serverDrawingPlanResponseFormat,
+            response_format: getResponseFormat(baseUrl, request.responseFormat),
+            max_tokens: 4096,
             messages: [
               {
                 role: "system",
-                content:
-                  "You convert voice drawing requests into valid DrawingPlan JSON. Return only JSON that matches the provided schema."
+                content: drawingPlannerSystemPrompt
               },
               {
                 role: "user",
@@ -134,6 +152,14 @@ function parseProviderPayload(payload: unknown): ServerPlannerResult {
     source: "llm",
     plan: parsed
   };
+}
+
+function getResponseFormat(baseUrl: string, responseFormat: unknown): unknown {
+  if (baseUrl.toLowerCase().includes("deepseek")) {
+    return { type: "json_object" };
+  }
+
+  return responseFormat ?? serverDrawingPlanResponseFormat;
 }
 
 function getAssistantContent(payload: unknown): unknown {

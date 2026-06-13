@@ -1,4 +1,4 @@
-export type ShapeKind = "circle" | "rect" | "line" | "triangle" | "text";
+export type ShapeKind = "circle" | "rect" | "line" | "triangle" | "text" | "ellipse" | "diamond" | "star";
 export type ShapeSize = "small" | "medium" | "large";
 export type PresetPosition =
   | "top-left"

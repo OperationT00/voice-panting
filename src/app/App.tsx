@@ -11,6 +11,7 @@ import { PlannerDebugPanel } from "../components/PlannerDebugPanel";
 import type { DrawingAction, DrawingInput, DrawingPlan } from "../drawing/types";
 import { exportSvgElement } from "../drawing/exportSvg";
 import { prepareActions } from "../drawing/actionPipeline";
+import { callLlmPlannerProxy } from "../planner/llmProxyClient";
 
 export function App() {
   const [state, dispatch] = useReducer(drawingReducer, undefined, createInitialDrawingState);
@@ -20,12 +21,24 @@ export function App() {
   const [logs, setLogs] = useState<string[]>(["系统已就绪"]);
   const svgRef = useRef<SVGSVGElement>(null);
 
-  const runActions = (source: string) => {
+  const runActions = async (source: string) => {
     const parsedInput = parseCommand(source);
     const actions = prepareActions(parsedInput);
     setLastInput(parsedInput);
     setTranscript(source);
     setLogs((current) => [`你说：${source}`, ...current].slice(0, 8));
+
+    if (isSingleErrorAction(actions)) {
+      const plannerResult = await callLlmPlannerProxy(source);
+      if (plannerResult.ok) {
+        applyPlan(plannerResult.plan, `AI 规划：${source}`);
+        return;
+      }
+      dispatch({ type: "error", message: plannerResult.message });
+      setLogs((current) => [plannerResult.message, ...current].slice(0, 8));
+      speak(plannerResult.message);
+      return;
+    }
 
     actions.forEach((action) => {
       dispatch(action);
@@ -53,15 +66,15 @@ export function App() {
     if (!text) {
       return;
     }
-    runActions(text);
+    void runActions(text);
     setSimulatedText("");
   };
 
-  const applyPlan = (plan: DrawingPlan) => {
+  const applyPlan = (plan: DrawingPlan, logMessage = `应用计划：${plan.title}`) => {
     const actions = prepareActions(plan);
     setLastInput(plan);
     setTranscript(plan.title);
-    setLogs((current) => [`应用计划：${plan.title}`, ...current].slice(0, 8));
+    setLogs((current) => [logMessage, ...current].slice(0, 8));
 
     actions.forEach((action) => {
       dispatch(action);
@@ -159,7 +172,7 @@ export function App() {
               "撤销",
               "导出 SVG"
             ].map((item) => (
-              <button key={item} onClick={() => runActions(item)} type="button">
+              <button key={item} onClick={() => void runActions(item)} type="button">
                 {item}
               </button>
             ))}
@@ -172,6 +185,10 @@ export function App() {
       </aside>
     </main>
   );
+}
+
+function isSingleErrorAction(actions: DrawingAction[]): actions is Array<{ type: "error"; message: string }> {
+  return actions.length === 1 && actions[0]?.type === "error";
 }
 
 function getFeedback(actions: DrawingAction[]): string {

@@ -1,6 +1,6 @@
 const shapeKindSchema = {
   type: "string",
-  enum: ["circle", "rect", "line", "triangle", "text"]
+  enum: ["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star"]
 } as const;
 
 const shapeSizeSchema = {

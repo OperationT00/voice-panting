@@ -2,7 +2,7 @@ import type { DrawingAction, PresetPosition, ShapeKind, ShapePosition, ShapeSize
 
 type ValidationResult = { ok: true } | { ok: false; message: string };
 
-const shapes: ShapeKind[] = ["circle", "rect", "line", "triangle", "text"];
+const shapes: ShapeKind[] = ["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star"];
 const sizes: ShapeSize[] = ["small", "medium", "large"];
 const positions: PresetPosition[] = [
   "top-left",

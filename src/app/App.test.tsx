@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -155,5 +155,49 @@ describe("App", () => {
 
     expect(document.querySelector('svg rect[fill="#2563eb"]')).toBeInTheDocument();
     expect(screen.getByLabelText("最近一次 Action JSON")).toHaveTextContent('"id": "flow-start"');
+  });
+
+  it("falls back to the api planner for unsupported direct voice commands", async () => {
+    const user = userEvent.setup();
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        source: "llm",
+        plan: {
+          type: "plan",
+          title: "Draw a rocket",
+          steps: [
+            {
+              id: "rocket-body",
+              title: "Draw rocket body",
+              dependsOn: [],
+              action: {
+                type: "create",
+                shape: "ellipse",
+                count: 1,
+                props: { color: "#94a3b8", size: "large", position: { x: 500, y: 260 } }
+              }
+            }
+          ]
+        }
+      })
+    });
+    vi.stubGlobal("fetch", fetcher);
+    render(<App />);
+
+    await user.type(screen.getByLabelText("文字模拟语音"), "draw a rocket{Enter}");
+
+    await waitFor(() => {
+      expect(fetcher).toHaveBeenCalledWith(
+        "/api/plan",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.stringContaining("draw a rocket")
+        })
+      );
+    });
+    await waitFor(() => expect(document.querySelector('svg ellipse[fill="#94a3b8"]')).toBeInTheDocument());
+    expect(screen.getByLabelText("最近一次 Action JSON")).toHaveTextContent('"id": "rocket-body"');
   });
 });
