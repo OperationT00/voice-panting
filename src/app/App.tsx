@@ -8,7 +8,7 @@ import { SvgCanvas } from "../components/SvgCanvas";
 import { ActionLog } from "../components/ActionLog";
 import { ActionJsonPanel } from "../components/ActionJsonPanel";
 import { PlannerDebugPanel } from "../components/PlannerDebugPanel";
-import type { DrawingAction, DrawingInput } from "../drawing/types";
+import type { DrawingAction, DrawingInput, DrawingPlan } from "../drawing/types";
 import { exportSvgElement } from "../drawing/exportSvg";
 import { prepareActions } from "../drawing/actionPipeline";
 
@@ -55,6 +55,22 @@ export function App() {
     }
     runActions(text);
     setSimulatedText("");
+  };
+
+  const applyPlan = (plan: DrawingPlan) => {
+    const actions = prepareActions(plan);
+    setLastInput(plan);
+    setTranscript(plan.title);
+    setLogs((current) => [`应用计划：${plan.title}`, ...current].slice(0, 8));
+
+    actions.forEach((action) => {
+      dispatch(action);
+      if (action.type === "export") {
+        window.setTimeout(() => exportSvgElement(svgRef.current), 0);
+      }
+    });
+
+    speak(getFeedback(actions));
   };
 
   return (
@@ -150,7 +166,7 @@ export function App() {
           </div>
         </div>
 
-        <PlannerDebugPanel />
+        <PlannerDebugPanel onApplyPlan={applyPlan} />
         <ActionLog logs={logs} />
         <ActionJsonPanel input={lastInput} />
       </aside>
