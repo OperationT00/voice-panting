@@ -109,3 +109,14 @@ npm.cmd run build
 Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目标引用和安全数值边界。后续接入 LLM 时，应要求模型只输出符合该 schema 的 JSON，再交给 `prepareActions` 和 `validateAction` 做运行时校验。
 
 为适配 strict structured output，schema 中的对象字段都显式 required；例如步骤没有依赖时，`dependsOn` 输出空数组。
+
+## LLM Planner Adapter
+
+`src/planner/llmPlanner.ts` 定义了后续接入真实 LLM 的统一接口：
+
+- `PlannerInput`: 用户文本和 `drawingPlanResponseFormat`。
+- `PlannerResult`: 成功时返回 `DrawingPlan` 和来源，失败时返回错误信息。
+- `PlanGenerator`: 可替换的异步计划生成函数。
+- `planFromText`: 先查本地模板，模板未命中再调用 fallback generator。
+
+当前默认 fallback 是 `mockPlanGenerator`，只返回“暂未接入真实 LLM planner”。后续接入真实模型时，只需要实现新的 `PlanGenerator`，复用同一份 schema 和后续执行管线。
