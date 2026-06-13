@@ -1,4 +1,4 @@
-import type { DrawableShape, DrawingAction, PresetPosition, ShapeKind, ShapePosition, ShapeSize } from "./types";
+import type { DrawableShape, DrawingAction, PresetPosition, ShapeKind, ShapePosition, ShapeProps, ShapeSize } from "./types";
 import { resolveTargetIds } from "./resolveTargetIds";
 
 export type DrawingState = {
@@ -30,6 +30,9 @@ export function drawingReducer(state: DrawingState, action: DrawingAction): Draw
         action.props.color,
         action.props.size,
         action.props.position,
+        action.props.rotation,
+        action.props.strokeColor,
+        action.props.strokeWidth,
         state.nextId
       );
       return commit(state, [...state.shapes, ...created], {
@@ -44,9 +47,7 @@ export function drawingReducer(state: DrawingState, action: DrawingAction): Draw
         return { ...state, message: "没有可修改的图形" };
       }
 
-      const shapes = state.shapes.map((shape) =>
-        targetIds.includes(shape.id) && action.props.color ? { ...shape, color: action.props.color } : shape
-      );
+      const shapes = state.shapes.map((shape) => (targetIds.includes(shape.id) ? updateShapeProps(shape, action.props) : shape));
       return commit(state, shapes, { selectedIds: targetIds, message: "已更新图形" });
     }
     case "delete": {
@@ -162,6 +163,9 @@ function createShapes(
   color: string,
   size: ShapeSize,
   position: ShapePosition,
+  rotation: number | undefined,
+  strokeColor: string | undefined,
+  strokeWidth: number | undefined,
   firstId: number
 ): DrawableShape[] {
   const points = getPoints(count, position);
@@ -175,9 +179,21 @@ function createShapes(
       width: dimensions.width,
       height: dimensions.height,
       color,
-      strokeWidth: 6
+      rotation: rotation ?? 0,
+      strokeColor,
+      strokeWidth: strokeWidth ?? 6
     };
   });
+}
+
+function updateShapeProps(shape: DrawableShape, props: Partial<ShapeProps>): DrawableShape {
+  return {
+    ...shape,
+    color: props.color ?? shape.color,
+    rotation: props.rotation ?? shape.rotation,
+    strokeColor: props.strokeColor ?? shape.strokeColor,
+    strokeWidth: props.strokeWidth ?? shape.strokeWidth
+  };
 }
 
 function getDimensions(kind: ShapeKind, size: ShapeSize): { width: number; height: number } {

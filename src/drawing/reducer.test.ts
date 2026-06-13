@@ -35,6 +35,28 @@ describe("drawingReducer", () => {
     expect(state.shapes[0]).toMatchObject({ x: 240, y: 180 });
   });
 
+  it("creates shapes with optional rotation and stroke styles", () => {
+    const state = drawingReducer(createInitialDrawingState(), {
+      type: "create",
+      shape: "ellipse",
+      count: 1,
+      props: {
+        color: "#16a34a",
+        size: "small",
+        position: { x: 520, y: 220 },
+        rotation: -28,
+        strokeColor: "#14532d",
+        strokeWidth: 4
+      }
+    });
+
+    expect(state.shapes[0]).toMatchObject({
+      rotation: -28,
+      strokeColor: "#14532d",
+      strokeWidth: 4
+    });
+  });
+
   it("updates the selected shape color", () => {
     const created = drawingReducer(createInitialDrawingState(), {
       type: "create",
@@ -54,6 +76,26 @@ describe("drawingReducer", () => {
     });
 
     expect(updated.shapes[0].color).toBe("#9333ea");
+  });
+
+  it("updates optional rotation and stroke styles", () => {
+    const state = {
+      ...createInitialDrawingState(),
+      shapes: [{ id: "shape-1", kind: "rect" as const, x: 100, y: 100, width: 120, height: 80, color: "#2563eb", strokeWidth: 6, rotation: 0 }],
+      selectedIds: ["shape-1"]
+    };
+
+    const updated = drawingReducer(state, {
+      type: "update",
+      target: { ref: "selected" },
+      props: { rotation: 15, strokeColor: "#0f172a", strokeWidth: 3 }
+    });
+
+    expect(updated.shapes[0]).toMatchObject({
+      rotation: 15,
+      strokeColor: "#0f172a",
+      strokeWidth: 3
+    });
   });
 
   it("updates shapes matched by kind target", () => {

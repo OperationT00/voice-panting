@@ -315,6 +315,14 @@ Schema 覆盖当前允许模型规划的动作：
 
 当前 `create` 支持的基础图形是 `circle`、`rect`、`line`、`triangle`、`text`、`ellipse`、`diamond` 和 `star`。这让模型可以用更少步骤组合出简笔画物体，例如苹果可以由椭圆主体、圆形高光、矩形果柄和椭圆叶子组成。
 
+`create.props` 还支持简笔画样式字段：
+
+- `rotation`: `-180` 到 `180` 度，用 SVG `rotate(angle cx cy)` 围绕图形中心旋转。
+- `strokeColor`: `#RRGGBB` 描边颜色，用于主体轮廓、叶子边缘、尾翼等。
+- `strokeWidth`: `0` 到 `24` 的描边宽度。
+
+这些字段都是运行时可选的，旧模板和本地规则可以不填写；面向 LLM 的 schema 会要求模型显式输出，减少“漏字段导致结构化输出不稳定”的情况。
+
 这层 schema 是第一道约束，目标是减少模型输出非法 JSON 或未知字段。`prepareActions` 和 `validateAction` 仍然是执行前的第二道校验，用来防止越界坐标、过大位移、未知目标引用等运行时风险。
 
 为了适配 strict structured output，schema 中的 object 都显式要求所有声明字段。对业务上可选的内容采用可执行约定处理：例如步骤没有依赖时，`dependsOn` 输出空数组；按类型引用目标时，可以选择只输出 `{ "kind": "circle" }`，也可以输出 `{ "kind": "circle", "index": 2 }`。

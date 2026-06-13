@@ -52,11 +52,14 @@ export const SvgCanvas = forwardRef<SVGSVGElement, Props>(function SvgCanvas({ s
 
 function ShapeView({ shape, selected }: { shape: DrawableShape; selected: boolean }) {
   const outline = selected ? "#0f172a" : "transparent";
+  const transform = shape.rotation ? `rotate(${shape.rotation} ${shape.x} ${shape.y})` : undefined;
+  const strokeColor = shape.strokeColor ?? "none";
+  const strokeWidth = shape.strokeColor ? shape.strokeWidth : 0;
 
   if (shape.kind === "circle") {
     return (
-      <g>
-        <circle cx={shape.x} cy={shape.y} r={shape.width / 2} fill={shape.color} />
+      <g transform={transform}>
+        <circle cx={shape.x} cy={shape.y} r={shape.width / 2} fill={shape.color} stroke={strokeColor} strokeWidth={strokeWidth} />
         <circle cx={shape.x} cy={shape.y} r={shape.width / 2 + 8} fill="none" stroke={outline} strokeWidth="4" />
       </g>
     );
@@ -64,8 +67,17 @@ function ShapeView({ shape, selected }: { shape: DrawableShape; selected: boolea
 
   if (shape.kind === "rect") {
     return (
-      <g>
-        <rect x={shape.x - shape.width / 2} y={shape.y - shape.height / 2} width={shape.width} height={shape.height} fill={shape.color} rx="8" />
+      <g transform={transform}>
+        <rect
+          x={shape.x - shape.width / 2}
+          y={shape.y - shape.height / 2}
+          width={shape.width}
+          height={shape.height}
+          fill={shape.color}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          rx="8"
+        />
         <rect
           x={shape.x - shape.width / 2 - 8}
           y={shape.y - shape.height / 2 - 8}
@@ -82,15 +94,17 @@ function ShapeView({ shape, selected }: { shape: DrawableShape; selected: boolea
 
   if (shape.kind === "line") {
     return (
-      <line
-        x1={shape.x - shape.width / 2}
-        y1={shape.y}
-        x2={shape.x + shape.width / 2}
-        y2={shape.y}
-        stroke={shape.color}
-        strokeWidth={shape.strokeWidth}
-        strokeLinecap="round"
-      />
+      <g transform={transform}>
+        <line
+          x1={shape.x - shape.width / 2}
+          y1={shape.y}
+          x2={shape.x + shape.width / 2}
+          y2={shape.y}
+          stroke={shape.strokeColor ?? shape.color}
+          strokeWidth={shape.strokeWidth}
+          strokeLinecap="round"
+        />
+      </g>
     );
   }
 
@@ -102,13 +116,25 @@ function ShapeView({ shape, selected }: { shape: DrawableShape; selected: boolea
     ]
       .map((point) => point.join(","))
       .join(" ");
-    return <polygon points={points} fill={shape.color} stroke={outline} strokeWidth={selected ? 4 : 0} />;
+    return (
+      <g transform={transform}>
+        <polygon points={points} fill={shape.color} stroke={selected ? outline : strokeColor} strokeWidth={selected ? 4 : strokeWidth} />
+      </g>
+    );
   }
 
   if (shape.kind === "ellipse") {
     return (
-      <g>
-        <ellipse cx={shape.x} cy={shape.y} rx={shape.width / 2} ry={shape.height / 2} fill={shape.color} />
+      <g transform={transform}>
+        <ellipse
+          cx={shape.x}
+          cy={shape.y}
+          rx={shape.width / 2}
+          ry={shape.height / 2}
+          fill={shape.color}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+        />
         <ellipse
           cx={shape.x}
           cy={shape.y}
@@ -131,18 +157,28 @@ function ShapeView({ shape, selected }: { shape: DrawableShape; selected: boolea
     ]
       .map((point) => point.join(","))
       .join(" ");
-    return <polygon points={points} fill={shape.color} stroke={outline} strokeWidth={selected ? 4 : 0} />;
+    return (
+      <g transform={transform}>
+        <polygon points={points} fill={shape.color} stroke={selected ? outline : strokeColor} strokeWidth={selected ? 4 : strokeWidth} />
+      </g>
+    );
   }
 
   if (shape.kind === "star") {
     const points = createStarPoints(shape.x, shape.y, shape.width / 2, shape.width / 4).join(" ");
-    return <polygon points={points} fill={shape.color} stroke={outline} strokeWidth={selected ? 4 : 0} />;
+    return (
+      <g transform={transform}>
+        <polygon points={points} fill={shape.color} stroke={selected ? outline : strokeColor} strokeWidth={selected ? 4 : strokeWidth} />
+      </g>
+    );
   }
 
   return (
-    <text x={shape.x} y={shape.y} textAnchor="middle" fill={shape.color} fontSize="42" fontWeight="700">
-      {shape.text ?? "文本"}
-    </text>
+    <g transform={transform}>
+      <text x={shape.x} y={shape.y} textAnchor="middle" fill={shape.color} stroke={strokeColor} strokeWidth={strokeWidth} fontSize="42" fontWeight="700">
+        {shape.text ?? "文本"}
+      </text>
+    </g>
   );
 }
 

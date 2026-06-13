@@ -41,6 +41,9 @@ describe("drawingPlanJsonSchema", () => {
 
     expect(createAction.properties.shape.enum).toEqual(["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star"]);
     expect(createAction.properties.props.properties.size.enum).toEqual(["small", "medium", "large"]);
+    expect(createAction.properties.props.properties.rotation).toEqual({ type: "number", minimum: -180, maximum: 180 });
+    expect(createAction.properties.props.properties.strokeColor).toEqual({ type: "string", pattern: "^#[0-9a-fA-F]{6}$" });
+    expect(createAction.properties.props.properties.strokeWidth).toEqual({ type: "number", minimum: 0, maximum: 24 });
     expect(createAction.properties.props.properties.position.anyOf[0].enum).toEqual([
       "top-left",
       "top",

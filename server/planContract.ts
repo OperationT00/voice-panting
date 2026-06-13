@@ -107,11 +107,56 @@ function isSupportedAction(action: Record<string, unknown>): boolean {
       Number.isInteger(action.count) &&
       Number(action.count) >= 1 &&
       Number(action.count) <= 8 &&
-      isRecord(action.props)
+      isValidCreateProps(action.props)
     );
   }
 
   return ["update", "delete", "move", "resize", "bringToFront", "sendToBack", "clear", "export"].includes(action.type);
+}
+
+function isValidCreateProps(value: unknown): boolean {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    isHexColor(value.color) &&
+    ["small", "medium", "large"].includes(String(value.size)) &&
+    isValidPosition(value.position) &&
+    (value.rotation === undefined || isSafeRotation(value.rotation)) &&
+    (value.strokeColor === undefined || isHexColor(value.strokeColor)) &&
+    (value.strokeWidth === undefined || isSafeStrokeWidth(value.strokeWidth))
+  );
+}
+
+function isValidPosition(value: unknown): boolean {
+  if (typeof value === "string") {
+    return ["top-left", "top", "top-right", "left", "center", "right", "bottom-left", "bottom", "bottom-right", "row"].includes(value);
+  }
+
+  return (
+    isRecord(value) &&
+    typeof value.x === "number" &&
+    typeof value.y === "number" &&
+    Number.isFinite(value.x) &&
+    Number.isFinite(value.y) &&
+    value.x >= 0 &&
+    value.x <= 1000 &&
+    value.y >= 0 &&
+    value.y <= 560
+  );
+}
+
+function isHexColor(value: unknown): value is string {
+  return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value);
+}
+
+function isSafeRotation(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= -180 && value <= 180;
+}
+
+function isSafeStrokeWidth(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= 24;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

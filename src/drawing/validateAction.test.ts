@@ -35,6 +35,52 @@ describe("validateAction", () => {
     }
   });
 
+  it("accepts optional sketch style props", () => {
+    expect(
+      validateAction({
+        type: "create",
+        shape: "ellipse",
+        count: 1,
+        props: {
+          color: "#16a34a",
+          size: "small",
+          position: { x: 520, y: 220 },
+          rotation: -28,
+          strokeColor: "#14532d",
+          strokeWidth: 4
+        }
+      })
+    ).toEqual({ ok: true });
+  });
+
+  it("rejects unsafe sketch style props", () => {
+    expect(
+      validateAction({
+        type: "create",
+        shape: "ellipse",
+        count: 1,
+        props: {
+          color: "#16a34a",
+          size: "small",
+          position: "center",
+          rotation: 720,
+          strokeColor: "#14532d",
+          strokeWidth: 4
+        }
+      })
+    ).toEqual({ ok: false, message: "旋转角度超出安全范围" });
+
+    expect(
+      validateAction({
+        type: "update",
+        target: { ref: "last" },
+        props: {
+          strokeColor: "green"
+        }
+      })
+    ).toEqual({ ok: false, message: "描边颜色必须是 #RRGGBB 格式" });
+  });
+
   it("rejects invalid colors", () => {
     const action = {
       type: "create",

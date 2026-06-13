@@ -23,6 +23,9 @@ export type ShapeProps = {
   color: string;
   size: ShapeSize;
   position: ShapePosition;
+  rotation?: number;
+  strokeColor?: string;
+  strokeWidth?: number;
 };
 
 export type SpatialTarget = "leftmost" | "rightmost" | "topmost" | "bottommost";
@@ -97,6 +100,8 @@ export type DrawableShape = {
   width: number;
   height: number;
   color: string;
+  rotation?: number;
+  strokeColor?: string;
   strokeWidth: number;
   text?: string;
 };
