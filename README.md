@@ -134,3 +134,39 @@ Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目�
 
 当前调试面板不会直接执行绘图，只用于验证模板命中、LLM adapter、schema 和 action pipeline 的衔接。
 面板内置“模板示例”和“Mock 示例”按钮，方便在不输入文字时快速验证两条 planner 分支。
+
+## LLM Proxy Contract
+
+真实 LLM 调用应通过服务端代理完成，前端只调用 `/api/plan`，不保存模型 API key。
+
+前端请求：
+
+```json
+{
+  "text": "画一个流程图",
+  "responseFormat": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "drawing_plan",
+      "strict": true,
+      "schema": {}
+    }
+  }
+}
+```
+
+前端期望响应：
+
+```json
+{
+  "ok": true,
+  "source": "llm",
+  "plan": {
+    "type": "plan",
+    "title": "画一个流程图",
+    "steps": []
+  }
+}
+```
+
+`src/planner/llmProxyClient.ts` 提供 `callLlmPlannerProxy` 和 `proxyPlanGenerator`。后续真实 provider 接入时，可以把 `proxyPlanGenerator` 作为 `planFromText` 的 fallback generator。
