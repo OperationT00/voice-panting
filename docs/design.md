@@ -453,3 +453,28 @@ frontend proxy client
 ```
 
 生产或正式 demo 接真实 provider 时，应把这层替换为后端或 serverless endpoint，并在服务端读取模型 API key。
+
+## LLM Provider Adapter
+
+`server/planProvider.ts` 把 `/api/plan` 的计划生成来源拆成可替换 provider：
+
+- `createConfiguredPlanProvider` 根据环境变量选择 provider。
+- 没有 `LLM_API_KEY` / `OPENAI_API_KEY` 时，使用 mock provider，保证本地 demo 不依赖外部服务。
+- 有 API key 时，使用 OpenAI-compatible provider 调用 `/chat/completions`。
+- provider 返回统一的 `PlannerResult`，前端不需要知道真实模型、mock 或后续 serverless 的差异。
+
+环境变量：
+
+```text
+LLM_API_KEY=真实模型密钥
+LLM_MODEL=gpt-4.1-mini
+LLM_BASE_URL=https://api.openai.com/v1
+```
+
+这层只做三件事：读取服务端密钥、调用模型、把模型响应解析成 `DrawingPlan`。模型返回后仍需满足 `server/planContract.ts` 的基础结构校验；进入前端后继续经过 `prepareActions` 和 `validateAction`，避免不可信模型输出直接修改画布。
+
+后续增强方向：
+
+- 把 Chat Completions provider 替换或扩展为 Responses API provider。
+- 为不同模型供应商增加独立 provider，例如 Qwen / DeepSeek / Moonshot。
+- 在 provider 层记录 token、耗时、fallback 原因，服务成本控制文档可直接引用。

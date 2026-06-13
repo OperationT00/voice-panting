@@ -1,5 +1,5 @@
 import type { Plugin } from "vite";
-import { handleMockPlanRequest } from "./mockPlanApi";
+import { handlePlanRequest } from "./planApi";
 
 export function mockPlanApiPlugin(): Plugin {
   return {
@@ -13,7 +13,7 @@ export function mockPlanApiPlugin(): Plugin {
 
         try {
           const body = await readJsonBody(request);
-          const result = await handleMockPlanRequest(body);
+          const result = await handlePlanRequest(body);
           sendJson(response, result.status, result.body);
         } catch {
           sendJson(response, 400, { ok: false, message: "Request body must be valid JSON" });
