@@ -428,3 +428,28 @@ type PlanGenerator = (input: PlannerInput) => Promise<PlannerResult>;
 ```ts
 planFromText(text, proxyPlanGenerator)
 ```
+
+## Mock /api/plan Endpoint
+
+本地开发环境通过 `server/mockPlanApiPlugin.ts` 在 Vite dev server 上注册 mock `/api/plan`。它用于先打通浏览器到代理端的请求链路，不调用真实模型，也不读取 API key。
+
+当前 mock 行为：
+
+- `POST /api/plan`
+- 请求体必须包含 `text`
+- `text` 包含“流程图”时，返回一个固定流程图 `DrawingPlan`
+- 其他文本返回 `{ "ok": false, "message": "Mock /api/plan is ready; real provider is not configured" }`
+- 非 POST 请求返回 405
+- 非法 JSON 返回 400
+
+这层 mock 的目标是验证：
+
+```text
+frontend proxy client
+  -> /api/plan
+  -> PlannerResult
+  -> planFromText fallback
+  -> prepareActions
+```
+
+生产或正式 demo 接真实 provider 时，应把这层替换为后端或 serverless endpoint，并在服务端读取模型 API key。
