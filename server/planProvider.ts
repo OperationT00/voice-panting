@@ -39,6 +39,17 @@ type OpenAiCompatibleProviderOptions = {
   fetcher?: Fetcher;
 };
 
+const drawingPlannerSystemPrompt = [
+  "You convert voice drawing requests into valid DrawingPlan JSON. Return only JSON that matches the provided schema.",
+  "Canvas coordinate range: x: 0-1000, y: 0-560.",
+  "Prefer coordinate positions over preset positions so the preview can be laid out precisely.",
+  "Break complex requests into ordered steps with concise human-readable titles.",
+  "Each step id must be stable, lowercase, and descriptive.",
+  "Use dependsOn as an ordered dependency list. dependsOn may only reference earlier step ids.",
+  "For diagrams and flows, place items from top to bottom or left to right with clear spacing.",
+  "Use simple SVG-friendly shapes, high-contrast colors, and no extra explanatory text outside the JSON."
+].join("\n");
+
 export function createConfiguredPlanProvider(env: ProviderEnv = getProcessEnv(), fetcher: Fetcher = getGlobalFetch()): PlanProvider {
   const apiKey = env.LLM_API_KEY ?? env.OPENAI_API_KEY;
 
@@ -88,8 +99,7 @@ export function createOpenAiCompatiblePlanProvider(options: OpenAiCompatibleProv
             messages: [
               {
                 role: "system",
-                content:
-                  "You convert voice drawing requests into valid DrawingPlan JSON. Return only JSON that matches the provided schema."
+                content: drawingPlannerSystemPrompt
               },
               {
                 role: "user",

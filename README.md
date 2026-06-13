@@ -191,6 +191,23 @@ Schema 覆盖当前支持的绘图动作、图形类型、尺寸、位置、目�
 
 可以复制 `.env.example` 为 `.env` 后填写本地密钥。真实密钥只会在 Vite dev server 侧读取，不会进入浏览器代码。
 
+本地 `.env` 示例：
+
+```text
+LLM_API_KEY=sk-...
+LLM_MODEL=gpt-4.1-mini
+LLM_BASE_URL=https://api.openai.com/v1
+```
+
+如果使用 OpenAI-compatible provider，可以只替换 `LLM_BASE_URL` 和 `LLM_MODEL`。不要使用 `VITE_LLM_API_KEY` 或其他 `VITE_` 前缀保存密钥，因为这类变量会被暴露给浏览器。
+
+真实 provider 的 prompt 会要求模型：
+
+- 使用 `x: 0-1000`、`y: 0-560` 的画布坐标。
+- 优先输出坐标位置，便于精确布局。
+- 把复杂需求拆成有顺序的步骤。
+- 使用稳定的步骤 `id` 和只引用前序步骤的 `dependsOn`。
+
 Planner 调试面板支持两种模式：
 
 - `本地 Planner`：先命中本地模板，未命中时返回本地 fallback。
