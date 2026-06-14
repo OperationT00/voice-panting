@@ -60,6 +60,11 @@ export type DrawingAction =
       dy: number;
     }
   | {
+      type: "rotate";
+      target: TargetRef;
+      degrees: number;
+    }
+  | {
       type: "resize";
       target: TargetRef;
       scale: number;
@@ -76,6 +81,7 @@ export type DrawingAction =
   | { type: "redo" }
   | { type: "clear" }
   | { type: "export" }
+  | { type: "saveTemplate" }
   | { type: "error"; message: string };
 
 export type DrawingPlanStep = {

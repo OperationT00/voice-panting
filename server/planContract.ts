@@ -75,60 +75,88 @@ export function isServerDrawingPlan(value: unknown): value is ServerDrawingPlan 
 }
 
 export function hasValidPlanShape(plan: ServerDrawingPlan): boolean {
+  return getPlanValidationError(plan) === undefined;
+}
+
+export function getPlanValidationError(plan: ServerDrawingPlan): string | undefined {
   if (!plan.title.trim() || plan.steps.length < 1 || plan.steps.length > 20) {
-    return false;
+    return "plan title must be non-empty and steps length must be 1-20";
   }
 
   const readyIds = new Set<string>();
   for (const step of plan.steps) {
     if (!step.id.trim() || !step.title.trim() || readyIds.has(step.id)) {
-      return false;
+      return `step ${step.id || "<empty>"} must have a unique non-empty id and title`;
     }
     if (step.dependsOn && step.dependsOn.some((id) => !readyIds.has(id))) {
-      return false;
+      return `step ${step.id} dependsOn may only reference earlier step ids`;
     }
-    if (!isSupportedAction(step.action)) {
-      return false;
+    const actionError = getActionValidationError(step.action);
+    if (actionError) {
+      return `step ${step.id}: ${actionError}`;
     }
     readyIds.add(step.id);
   }
 
-  return true;
+  return undefined;
 }
 
-function isSupportedAction(action: Record<string, unknown>): boolean {
+function getActionValidationError(action: Record<string, unknown>): string | undefined {
   if (typeof action.type !== "string") {
-    return false;
+    return "action type must be a string";
   }
 
   if (action.type === "create") {
-    return (
-      ["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star", "path"].includes(String(action.shape)) &&
-      Number.isInteger(action.count) &&
-      Number(action.count) >= 1 &&
-      Number(action.count) <= 8 &&
-      isValidCreateProps(action.props, String(action.shape))
-    );
+    if (!["circle", "rect", "line", "triangle", "text", "ellipse", "diamond", "star", "path"].includes(String(action.shape))) {
+      return `unsupported shape "${String(action.shape)}"`;
+    }
+    if (!Number.isInteger(action.count) || Number(action.count) < 1 || Number(action.count) > 8) {
+      return "create count must be an integer from 1 to 8";
+    }
+    const propsError = getCreatePropsValidationError(action.props, String(action.shape));
+    return propsError ? `invalid create props: ${propsError}` : undefined;
   }
 
-  return ["update", "delete", "move", "resize", "bringToFront", "sendToBack", "clear", "export"].includes(action.type);
+  return ["update", "delete", "move", "resize", "bringToFront", "sendToBack", "clear", "export"].includes(action.type)
+    ? undefined
+    : `unsupported action type "${action.type}"`;
 }
 
 function isValidCreateProps(value: unknown, shape: string): boolean {
+  return getCreatePropsValidationError(value, shape) === undefined;
+}
+
+function getCreatePropsValidationError(value: unknown, shape: string): string | undefined {
   if (!isRecord(value)) {
-    return false;
+    return "props must be an object";
   }
 
-  return (
-    isHexColor(value.color) &&
-    ["small", "medium", "large"].includes(String(value.size)) &&
-    isValidPosition(value.position) &&
-    (value.rotation === undefined || isSafeRotation(value.rotation)) &&
-    (value.strokeColor === undefined || isHexColor(value.strokeColor)) &&
-    (value.strokeWidth === undefined || isSafeStrokeWidth(value.strokeWidth)) &&
-    (shape !== "path" || isSafePathData(value.pathData)) &&
-    (value.pathData === undefined || isSafePathData(value.pathData))
-  );
+  if (!isHexColor(value.color)) {
+    return "color must be #RRGGBB";
+  }
+  if (!["small", "medium", "large"].includes(String(value.size))) {
+    return "size must be small, medium, or large";
+  }
+  if (!isValidPosition(value.position)) {
+    return "position must be a preset or x/y coordinate inside the canvas";
+  }
+  if (value.rotation !== undefined && !isSafeRotation(value.rotation)) {
+    return "rotation must be between -180 and 180";
+  }
+  if (value.strokeColor !== undefined && !isHexColor(value.strokeColor)) {
+    return "strokeColor must be #RRGGBB";
+  }
+  if (value.strokeWidth !== undefined && !isSafeStrokeWidth(value.strokeWidth)) {
+    return "strokeWidth must be between 0 and 24";
+  }
+  if (shape === "path" && !isSafePathData(value.pathData)) {
+    return "path shapes require safe pathData using only M, L, Q, C, and Z commands";
+  }
+  if (value.pathData !== undefined && !isSafePathData(value.pathData)) {
+    return "pathData may only use M, L, Q, C, and Z commands with safe canvas coordinates";
+  }
+
+  return undefined;
 }
 
 function isValidPosition(value: unknown): boolean {

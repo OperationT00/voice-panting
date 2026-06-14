@@ -7,41 +7,10 @@ type Props = {
 };
 
 export const SvgCanvas = forwardRef<SVGSVGElement, Props>(function SvgCanvas({ shapes, selectedIds }, ref) {
-  const xTicks = [0, 250, 500, 750, 1000];
-  const yTicks = [0, 140, 280, 420, 560];
-
   return (
     <div className="canvas-frame">
       <svg ref={ref} viewBox="0 0 1000 560" role="img" aria-label="语音绘图画布">
-        <rect x="0" y="0" width="1000" height="560" fill="#fbfaf7" />
-        <g opacity="0.2">
-          {Array.from({ length: 10 }, (_, index) => (
-            <line key={`v-${index}`} x1={index * 100} y1="0" x2={index * 100} y2="560" stroke="#94a3b8" />
-          ))}
-          {Array.from({ length: 6 }, (_, index) => (
-            <line key={`h-${index}`} x1="0" y1={index * 100} x2="1000" y2={index * 100} stroke="#94a3b8" />
-          ))}
-        </g>
-        <g className="axis-layer" fill="#64748b" fontSize="18" fontWeight="700">
-          <line x1="0" y1="0" x2="1000" y2="0" stroke="#64748b" strokeWidth="2" />
-          <line x1="0" y1="0" x2="0" y2="560" stroke="#64748b" strokeWidth="2" />
-          {xTicks.map((tick) => (
-            <g key={`x-${tick}`}>
-              <line x1={tick} y1="0" x2={tick} y2="12" stroke="#64748b" strokeWidth="2" />
-              <text x={tick === 1000 ? 970 : tick + 8} y="30">
-                {tick}
-              </text>
-            </g>
-          ))}
-          {yTicks.map((tick) => (
-            <g key={`y-${tick}`}>
-              <line x1="0" y1={tick} x2="12" y2={tick} stroke="#64748b" strokeWidth="2" />
-              <text x="18" y={tick === 0 ? 54 : tick + 6}>
-                {tick}
-              </text>
-            </g>
-          ))}
-        </g>
+        <rect x="0" y="0" width="1000" height="560" fill="#fffdfa" />
         {shapes.map((shape) => (
           <ShapeView key={shape.id} shape={shape} selected={selectedIds.includes(shape.id)} />
         ))}

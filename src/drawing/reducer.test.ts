@@ -191,6 +191,22 @@ describe("drawingReducer", () => {
     expect(updated.shapes[0]).toMatchObject({ x: 160, y: 80 });
   });
 
+  it("rotates shapes matched by target", () => {
+    const state = {
+      ...createInitialDrawingState(),
+      shapes: [{ id: "shape-1", kind: "ellipse" as const, x: 100, y: 100, width: 80, height: 56, color: "#16a34a", strokeWidth: 6, rotation: -5 }],
+      selectedIds: ["shape-1"]
+    };
+
+    const updated = drawingReducer(state, {
+      type: "rotate",
+      target: { ref: "selected" },
+      degrees: 15
+    });
+
+    expect(updated.shapes[0]).toMatchObject({ rotation: 10 });
+  });
+
   it("resizes shapes matched by target", () => {
     const state = {
       ...createInitialDrawingState(),

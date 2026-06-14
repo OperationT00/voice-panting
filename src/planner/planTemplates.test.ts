@@ -69,4 +69,47 @@ describe("planTemplates", () => {
     expect(plan?.steps[1].action).toMatchObject({ shape: "path", props: { pathData: "M 465 235 Q 500 255 535 235" } });
     expect(plan?.steps[4].action).toMatchObject({ shape: "ellipse", props: { rotation: -28, strokeColor: "#14532d", strokeWidth: 3 } });
   });
+
+  it("finds a rocket sketch template before falling back to the LLM planner", () => {
+    const rocketTemplate = planTemplates.find((template) => template.id === "rocket-sketch");
+    const plan = findPlanTemplate("画一个火箭");
+
+    expect(rocketTemplate).toMatchObject({ category: "object", source: "manual" });
+    expect(plan?.steps.map((step) => step.id)).toEqual(["rocket-body", "rocket-nose", "rocket-window", "rocket-left-fin", "rocket-right-fin", "rocket-flame"]);
+    expect(plan?.steps.map((step) => step.action.type)).toEqual(["create", "create", "create", "create", "create", "create"]);
+    expect(plan?.steps[0].action).toMatchObject({ shape: "ellipse", props: { rotation: -90, strokeColor: "#475569", strokeWidth: 4 } });
+    expect(plan?.steps[5].action).toMatchObject({ shape: "path", props: { pathData: "M 455 380 Q 500 455 545 380" } });
+  });
+
+  it("finds user templates after built-in templates", () => {
+    const plan = findPlanTemplate("画一个火箭", [
+      {
+        id: "user-template-1",
+        category: "object",
+        source: "user",
+        keywords: ["火箭"],
+        description: "用户保存的火箭模板",
+        plan: {
+          type: "plan",
+          title: "画一个火箭",
+          steps: [
+            {
+              id: "rocket-body",
+              title: "画火箭主体",
+              dependsOn: [],
+              action: {
+                type: "create",
+                shape: "ellipse",
+                count: 1,
+                props: { color: "#94a3b8", size: "large", position: { x: 500, y: 260 } }
+              }
+            }
+          ]
+        }
+      }
+    ]);
+
+    expect(plan?.title).toBe("画一个火箭");
+    expect(plan?.steps[0].id).toBe("rocket-body");
+  });
 });

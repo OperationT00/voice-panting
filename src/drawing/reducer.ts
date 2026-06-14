@@ -71,6 +71,17 @@ export function drawingReducer(state: DrawingState, action: DrawingAction): Draw
       );
       return commit(state, shapes, { selectedIds: targetIds, message: "已移动图形" });
     }
+    case "rotate": {
+      const targetIds = resolveTargetIds(state, action.target);
+      if (targetIds.length === 0) {
+        return { ...state, message: "没有可旋转的图形" };
+      }
+
+      const shapes = state.shapes.map((shape) =>
+        targetIds.includes(shape.id) ? { ...shape, rotation: normalizeRotation((shape.rotation ?? 0) + action.degrees) } : shape
+      );
+      return commit(state, shapes, { selectedIds: targetIds, message: "已旋转图形" });
+    }
     case "resize": {
       const targetIds = resolveTargetIds(state, action.target);
       if (targetIds.length === 0) {
@@ -198,6 +209,16 @@ function updateShapeProps(shape: DrawableShape, props: Partial<ShapeProps>): Dra
     strokeWidth: props.strokeWidth ?? shape.strokeWidth,
     pathData: props.pathData ?? shape.pathData
   };
+}
+
+function normalizeRotation(value: number): number {
+  if (value > 180) {
+    return value - 360;
+  }
+  if (value < -180) {
+    return value + 360;
+  }
+  return value;
 }
 
 function getDimensions(kind: ShapeKind, size: ShapeSize): { width: number; height: number } {

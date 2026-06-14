@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasValidPlanShape, type ServerDrawingPlan } from "./planContract";
+import { getPlanValidationError, hasValidPlanShape, type ServerDrawingPlan } from "./planContract";
 
 describe("hasValidPlanShape", () => {
   it("accepts optional sketch style props on create actions", () => {
@@ -112,5 +112,32 @@ describe("hasValidPlanShape", () => {
     };
 
     expect(hasValidPlanShape(plan)).toBe(false);
+  });
+
+  it("explains why a drawing plan is invalid", () => {
+    const plan: ServerDrawingPlan = {
+      type: "plan",
+      title: "Bad rocket",
+      steps: [
+        {
+          id: "rocket-body",
+          title: "Draw rocket body",
+          dependsOn: [],
+          action: {
+            type: "create",
+            shape: "rocket",
+            count: 1,
+            props: {
+              color: "#94a3b8",
+              size: "large",
+              position: { x: 500, y: 260 }
+            }
+          }
+        }
+      ]
+    };
+
+    expect(getPlanValidationError(plan)).toContain("step rocket-body");
+    expect(getPlanValidationError(plan)).toContain("unsupported shape");
   });
 });

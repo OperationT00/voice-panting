@@ -33,6 +33,8 @@ export function validateAction(action: unknown): ValidationResult {
       return validateTargetAction(action, false);
     case "move":
       return validateMoveAction(action);
+    case "rotate":
+      return validateRotateAction(action);
     case "resize":
       return validateResizeAction(action);
     case "bringToFront":
@@ -42,6 +44,7 @@ export function validateAction(action: unknown): ValidationResult {
     case "redo":
     case "clear":
     case "export":
+    case "saveTemplate":
       return { ok: true };
     case "error":
       return typeof action.message === "string" ? { ok: true } : { ok: false, message: "错误消息格式无效" };
@@ -92,6 +95,17 @@ function validateMoveAction(action: Record<string, unknown>): ValidationResult {
   }
   if (!isSafeDelta(action.dx) || !isSafeDelta(action.dy)) {
     return { ok: false, message: "移动距离超出安全范围" };
+  }
+  return { ok: true };
+}
+
+function validateRotateAction(action: Record<string, unknown>): ValidationResult {
+  const targetResult = validateTarget(action.target);
+  if (!targetResult.ok) {
+    return targetResult;
+  }
+  if (!isSafeRotationDelta(action.degrees)) {
+    return { ok: false, message: "旋转角度超出安全范围" };
   }
   return { ok: true };
 }
@@ -227,6 +241,10 @@ function isSafeDelta(value: unknown): value is number {
 
 function isSafeRotation(value: unknown): value is number {
   return value === undefined || (typeof value === "number" && Number.isFinite(value) && value >= -180 && value <= 180);
+}
+
+function isSafeRotationDelta(value: unknown): value is number {
+  return typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= 180;
 }
 
 function isSafeStrokeWidth(value: unknown): value is number {

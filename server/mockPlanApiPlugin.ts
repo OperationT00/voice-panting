@@ -1,12 +1,17 @@
 import type { Plugin } from "vite";
+import { handleImageRequest } from "./imageApi";
+import { createConfiguredImageProvider, type ImageProviderEnv } from "./imageProvider";
 import { handlePlanRequest } from "./planApi";
 import { createConfiguredPlanProvider, type ProviderEnv } from "./planProvider";
 
-export function mockPlanApiPlugin(env?: ProviderEnv): Plugin {
+type PluginEnv = ProviderEnv & ImageProviderEnv;
+
+export function mockPlanApiPlugin(env?: PluginEnv): Plugin {
   return {
     name: "mock-plan-api",
     configureServer(server) {
       const provider = createConfiguredPlanProvider(env);
+      const imageProvider = createConfiguredImageProvider(env);
 
       server.middlewares.use("/api/plan", async (request, response) => {
         if ((request as { method?: string }).method !== "POST") {
@@ -17,6 +22,21 @@ export function mockPlanApiPlugin(env?: ProviderEnv): Plugin {
         try {
           const body = await readJsonBody(request);
           const result = await handlePlanRequest(body, provider);
+          sendJson(response, result.status, result.body);
+        } catch {
+          sendJson(response, 400, { ok: false, message: "Request body must be valid JSON" });
+        }
+      });
+
+      server.middlewares.use("/api/image", async (request, response) => {
+        if ((request as { method?: string }).method !== "POST") {
+          sendJson(response, 405, { ok: false, message: "Method not allowed" });
+          return;
+        }
+
+        try {
+          const body = await readJsonBody(request);
+          const result = await handleImageRequest(body, imageProvider);
           sendJson(response, result.status, result.body);
         } catch {
           sendJson(response, 400, { ok: false, message: "Request body must be valid JSON" });
