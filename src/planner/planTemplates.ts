@@ -1,9 +1,10 @@
 import type { DrawingPlan } from "../drawing/types";
+import { loadUserPlanTemplates } from "./userPlanTemplates";
 
 export type PlanTemplate = {
   id: string;
   category: "scene" | "object";
-  source: "manual" | "vision";
+  source: "manual" | "vision" | "user";
   keywords: string[];
   description: string;
   plan: DrawingPlan;
@@ -138,12 +139,98 @@ export const planTemplates: PlanTemplate[] = [
         }
       ]
     }
+  },
+  {
+    id: "rocket-sketch",
+    category: "object",
+    source: "manual",
+    keywords: ["火箭", "rocket", "飞船"],
+    description: "由箭身、尖头、窗户、尾翼和火焰组成的火箭简笔画",
+    plan: {
+      type: "plan",
+      title: "画一个火箭",
+      steps: [
+        {
+          id: "rocket-body",
+          title: "画火箭主体",
+          dependsOn: [],
+          action: {
+            type: "create",
+            shape: "ellipse",
+            count: 1,
+            props: { color: "#e2e8f0", size: "large", position: { x: 500, y: 295 }, rotation: -90, strokeColor: "#475569", strokeWidth: 4 }
+          }
+        },
+        {
+          id: "rocket-nose",
+          title: "画火箭尖头",
+          dependsOn: ["rocket-body"],
+          action: {
+            type: "create",
+            shape: "triangle",
+            count: 1,
+            props: { color: "#ef4444", size: "medium", position: { x: 500, y: 185 }, rotation: 0, strokeColor: "#991b1b", strokeWidth: 3 }
+          }
+        },
+        {
+          id: "rocket-window",
+          title: "画圆形窗户",
+          dependsOn: ["rocket-body"],
+          action: {
+            type: "create",
+            shape: "circle",
+            count: 1,
+            props: { color: "#38bdf8", size: "small", position: { x: 500, y: 270 }, strokeColor: "#075985", strokeWidth: 3 }
+          }
+        },
+        {
+          id: "rocket-left-fin",
+          title: "画左侧尾翼",
+          dependsOn: ["rocket-body"],
+          action: {
+            type: "create",
+            shape: "triangle",
+            count: 1,
+            props: { color: "#f97316", size: "small", position: { x: 430, y: 365 }, rotation: -35, strokeColor: "#9a3412", strokeWidth: 3 }
+          }
+        },
+        {
+          id: "rocket-right-fin",
+          title: "画右侧尾翼",
+          dependsOn: ["rocket-body"],
+          action: {
+            type: "create",
+            shape: "triangle",
+            count: 1,
+            props: { color: "#f97316", size: "small", position: { x: 570, y: 365 }, rotation: 35, strokeColor: "#9a3412", strokeWidth: 3 }
+          }
+        },
+        {
+          id: "rocket-flame",
+          title: "画喷射火焰",
+          dependsOn: ["rocket-body", "rocket-left-fin", "rocket-right-fin"],
+          action: {
+            type: "create",
+            shape: "path",
+            count: 1,
+            props: {
+              color: "#facc15",
+              size: "medium",
+              position: { x: 500, y: 410 },
+              pathData: "M 455 380 Q 500 455 545 380",
+              strokeColor: "#ea580c",
+              strokeWidth: 8
+            }
+          }
+        }
+      ]
+    }
   }
 ];
 
-export function findPlanTemplate(text: string): DrawingPlan | undefined {
+export function findPlanTemplate(text: string, extraTemplates: PlanTemplate[] = loadUserPlanTemplates()): DrawingPlan | undefined {
   const normalizedText = normalizeText(text);
-  const matchedTemplate = planTemplates.find((template) =>
+  const matchedTemplate = [...planTemplates, ...extraTemplates].find((template) =>
     template.keywords.some((keyword) => normalizedText.includes(normalizeText(keyword)))
   );
 

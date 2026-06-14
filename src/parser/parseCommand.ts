@@ -59,6 +59,10 @@ export function parseCommand(rawText: string): DrawingInput {
     return [{ type: "clear" }];
   }
 
+  if (/保存.*模板|存成模板|保存为模板/.test(text)) {
+    return [{ type: "saveTemplate" }];
+  }
+
   if (/导出|保存/.test(text)) {
     return [{ type: "export" }];
   }
@@ -72,9 +76,13 @@ export function parseCommand(rawText: string): DrawingInput {
     return [{ type: "delete", target: pickTarget(text) }];
   }
 
-  if (/移动|移到|挪/.test(text)) {
+  if (/移动|移到|挪|微调/.test(text)) {
     const delta = pickMoveDelta(text);
     return [{ type: "move", target: pickTarget(text), dx: delta.dx, dy: delta.dy }];
+  }
+
+  if (/旋转|转动/.test(text)) {
+    return [{ type: "rotate", target: pickTarget(text), degrees: pickRotationDegrees(text) }];
   }
 
   if (/放大|缩小/.test(text)) {
@@ -94,6 +102,14 @@ export function parseCommand(rawText: string): DrawingInput {
     if (color) {
       return [{ type: "update", target: pickTarget(text), props: { color } }];
     }
+  }
+
+  if (/描边|线条/.test(text) && /加粗|变粗|粗一点/.test(text)) {
+    return [{ type: "update", target: pickTarget(text), props: { strokeWidth: 10 } }];
+  }
+
+  if (/描边|线条/.test(text) && /变细|细一点|调细/.test(text)) {
+    return [{ type: "update", target: pickTarget(text), props: { strokeWidth: 3 } }];
   }
 
   if (/画|绘制|添加/.test(text)) {
@@ -184,7 +200,7 @@ function pickOrdinal(text: string): number | undefined {
 }
 
 function pickMoveDelta(text: string): { dx: number; dy: number } {
-  const amount = /大幅|很多|远一点/.test(text) ? 120 : 60;
+  const amount = /微调|轻微|一点点/.test(text) ? 16 : /大幅|很多|远一点/.test(text) ? 120 : 60;
   if (/向左|往左|左移/.test(text)) {
     return { dx: -amount, dy: 0 };
   }
@@ -198,6 +214,11 @@ function pickMoveDelta(text: string): { dx: number; dy: number } {
     return { dx: 0, dy: amount };
   }
   return { dx: amount, dy: 0 };
+}
+
+function pickRotationDegrees(text: string): number {
+  const amount = /一点|轻微|微调/.test(text) ? 10 : 30;
+  return /逆时针|向左|往左|左转/.test(text) ? -amount : amount;
 }
 
 function pickSize(text: string): ShapeSize {

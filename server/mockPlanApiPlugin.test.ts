@@ -63,22 +63,22 @@ describe("mockPlanApiPlugin", () => {
 });
 
 function getRegisteredHandler(plugin: ReturnType<typeof mockPlanApiPlugin>) {
-  let handler: ((request: unknown, response: ReturnType<typeof createResponse>) => Promise<void>) | undefined;
+  const handlers = new Map<string, (request: unknown, response: ReturnType<typeof createResponse>) => Promise<void>>();
   const configureServer = plugin.configureServer as (server: {
     middlewares: {
-      use: (path: string, next: typeof handler) => void;
+      use: (path: string, next: (request: unknown, response: ReturnType<typeof createResponse>) => Promise<void>) => void;
     };
   }) => void;
 
   configureServer({
     middlewares: {
       use(path, next) {
-        expect(path).toBe("/api/plan");
-        handler = next;
+        handlers.set(path, next);
       }
     }
   });
 
+  const handler = handlers.get("/api/plan");
   if (!handler) {
     throw new Error("Plugin did not register /api/plan handler");
   }

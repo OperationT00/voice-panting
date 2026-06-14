@@ -198,6 +198,30 @@ describe("validateAction", () => {
     expect(validateAction(action)).toEqual({ ok: false, message: "移动距离超出安全范围" });
   });
 
+  it("accepts safe rotation tuning actions", () => {
+    expect(
+      validateAction({
+        type: "rotate",
+        target: { ref: "last" },
+        degrees: -10
+      })
+    ).toEqual({ ok: true });
+  });
+
+  it("rejects unsafe rotation tuning actions", () => {
+    expect(
+      validateAction({
+        type: "rotate",
+        target: { ref: "last" },
+        degrees: 240
+      })
+    ).toEqual({ ok: false, message: "旋转角度超出安全范围" });
+  });
+
+  it("accepts template save actions", () => {
+    expect(validateAction({ type: "saveTemplate" })).toEqual({ ok: true });
+  });
+
   it("rejects unsafe resize scales", () => {
     const action = {
       type: "resize",

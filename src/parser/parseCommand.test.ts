@@ -132,6 +132,41 @@ describe("parseCommand", () => {
     ]);
   });
 
+  it("parses micro movement commands", () => {
+    expect(parseCommand("把刚才的图形向左微调一点")).toEqual([
+      {
+        type: "move",
+        target: { ref: "last" },
+        dx: -16,
+        dy: 0
+      }
+    ]);
+  });
+
+  it("parses rotation and stroke tuning commands", () => {
+    expect(parseCommand("把刚才的图形顺时针旋转一点")).toEqual([
+      {
+        type: "rotate",
+        target: { ref: "last" },
+        degrees: 10
+      }
+    ]);
+
+    expect(parseCommand("把刚才的图形描边加粗")).toEqual([
+      {
+        type: "update",
+        target: { ref: "last" },
+        props: { strokeWidth: 10 }
+      }
+    ]);
+  });
+
+  it("parses voice template save commands", () => {
+    expect(parseCommand("保存为模板")).toEqual([{ type: "saveTemplate" }]);
+    expect(parseCommand("保存此模板")).toEqual([{ type: "saveTemplate" }]);
+    expect(parseCommand("保存当前模板")).toEqual([{ type: "saveTemplate" }]);
+  });
+
   it("resizes shapes by target", () => {
     expect(parseCommand("把所有圆放大")).toEqual([
       {

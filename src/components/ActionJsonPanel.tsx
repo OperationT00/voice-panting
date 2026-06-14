@@ -1,11 +1,12 @@
 import { Clipboard } from "lucide-react";
-import type { DrawingInput } from "../drawing/types";
 
 type Props = {
-  input: DrawingInput;
+  input: unknown;
+  title?: string;
+  label?: string;
 };
 
-export function ActionJsonPanel({ input }: Props) {
+export function ActionJsonPanel({ input, title = "Action JSON", label = "最近一次 Action JSON" }: Props) {
   const json = JSON.stringify(input, null, 2);
 
   const copyJson = async () => {
@@ -15,12 +16,12 @@ export function ActionJsonPanel({ input }: Props) {
   return (
     <div className="panel-section action-json-panel">
       <div className="panel-heading">
-        <h2>Action JSON</h2>
-        <button onClick={copyJson} type="button" title="复制 Action JSON">
+        <h2>{title}</h2>
+        <button onClick={copyJson} type="button" title={`复制 ${title}`}>
           <Clipboard size={16} />
         </button>
       </div>
-      <pre aria-label="最近一次 Action JSON">{json}</pre>
+      <pre aria-label={label}>{json}</pre>
     </div>
   );
 }

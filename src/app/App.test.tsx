@@ -11,6 +11,7 @@ vi.mock("../speech/speechSynthesis", () => ({
 describe("App", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    window.localStorage.clear();
   });
 
   it("uses typed text as a simulated voice command", async () => {
@@ -47,114 +48,14 @@ describe("App", () => {
     expect(document.querySelector('svg circle[fill="#eab308"]')).toBeInTheDocument();
   });
 
-  it("shows planner debug result for a template command", async () => {
-    const user = userEvent.setup();
+  it("keeps the right panel focused on input, logs, and action JSON", () => {
     render(<App />);
 
-    await user.type(screen.getByLabelText("Planner 调试输入"), "画一幅小房子");
-    await user.click(screen.getByRole("button", { name: "运行 Planner" }));
-
-    expect(screen.getByText("source: template")).toBeInTheDocument();
-    expect(screen.getByText(/"type": "plan"/)).toBeInTheDocument();
-    expect(screen.getByText(/"id": "house-body"/)).toBeInTheDocument();
-    expect(screen.getByText(/Prepared Actions/)).toBeInTheDocument();
-  });
-
-  it("shows planner debug error for an unmatched command", async () => {
-    const user = userEvent.setup();
-    render(<App />);
-
-    await user.type(screen.getByLabelText("Planner 调试输入"), "画一个复杂流程图");
-    await user.click(screen.getByRole("button", { name: "运行 Planner" }));
-
-    expect(screen.getByText("暂未接入真实 LLM planner")).toBeInTheDocument();
-  });
-
-  it("runs planner debug through the api plan proxy mode", async () => {
-    const user = userEvent.setup();
-    const fetcher = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        ok: true,
-        source: "llm",
-        plan: {
-          type: "plan",
-          title: "画一个流程图",
-          steps: [
-            {
-              id: "flow-start",
-              title: "画开始节点",
-              dependsOn: [],
-              action: {
-                type: "create",
-                shape: "rect",
-                count: 1,
-                props: { color: "#2563eb", size: "medium", position: { x: 500, y: 160 } }
-              }
-            }
-          ]
-        }
-      })
-    });
-    vi.stubGlobal("fetch", fetcher);
-    render(<App />);
-
-    await user.click(screen.getByRole("button", { name: "/api/plan" }));
-    await user.type(screen.getByLabelText("Planner 调试输入"), "画一个复杂流程图");
-    await user.click(screen.getByRole("button", { name: "运行 Planner" }));
-
-    expect(fetcher).toHaveBeenCalledWith(
-      "/api/plan",
-      expect.objectContaining({
-        method: "POST",
-        body: expect.stringContaining("画一个复杂流程图")
-      })
-    );
-    expect(screen.getByText("source: llm")).toBeInTheDocument();
-    expect(screen.getByText(/"id": "flow-start"/)).toBeInTheDocument();
-    expect(screen.getByText(/Prepared Actions/)).toBeInTheDocument();
-  });
-
-  it("previews an api plan before applying it to the canvas", async () => {
-    const user = userEvent.setup();
-    const fetcher = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        ok: true,
-        source: "llm",
-        plan: {
-          type: "plan",
-          title: "画一个流程图",
-          steps: [
-            {
-              id: "flow-start",
-              title: "画开始节点",
-              dependsOn: [],
-              action: {
-                type: "create",
-                shape: "rect",
-                count: 1,
-                props: { color: "#2563eb", size: "medium", position: { x: 500, y: 160 } }
-              }
-            }
-          ]
-        }
-      })
-    });
-    vi.stubGlobal("fetch", fetcher);
-    render(<App />);
-
-    await user.click(screen.getByRole("button", { name: "/api/plan" }));
-    await user.type(screen.getByLabelText("Planner 调试输入"), "画一个复杂流程图");
-    await user.click(screen.getByRole("button", { name: "运行 Planner" }));
-
-    expect(screen.getByText("画开始节点")).toBeInTheDocument();
-    expect(document.querySelector('svg rect[fill="#2563eb"]')).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "应用计划" }));
-
-    expect(document.querySelector('svg rect[fill="#2563eb"]')).toBeInTheDocument();
-    expect(screen.getByLabelText("最近一次 Action JSON")).toHaveTextContent('"id": "flow-start"');
+    expect(screen.getByLabelText("文字模拟语音")).toBeInTheDocument();
+    expect(screen.getByText("动作日志")).toBeInTheDocument();
+    expect(screen.getByText("Action JSON")).toBeInTheDocument();
+    expect(screen.queryByText("可试指令")).not.toBeInTheDocument();
+    expect(screen.queryByText("Planner 调试")).not.toBeInTheDocument();
   });
 
   it("falls back to the api planner for unsupported direct voice commands", async () => {
@@ -166,15 +67,15 @@ describe("App", () => {
         source: "llm",
         plan: {
           type: "plan",
-          title: "Draw a rocket",
+          title: "Draw a robot",
           steps: [
             {
-              id: "rocket-body",
-              title: "Draw rocket body",
+              id: "robot-body",
+              title: "Draw robot body",
               dependsOn: [],
               action: {
                 type: "create",
-                shape: "ellipse",
+                shape: "rect",
                 count: 1,
                 props: { color: "#94a3b8", size: "large", position: { x: 500, y: 260 } }
               }
@@ -186,18 +87,111 @@ describe("App", () => {
     vi.stubGlobal("fetch", fetcher);
     render(<App />);
 
-    await user.type(screen.getByLabelText("文字模拟语音"), "draw a rocket{Enter}");
+    await user.type(screen.getByLabelText("文字模拟语音"), "draw a robot{Enter}");
 
     await waitFor(() => {
       expect(fetcher).toHaveBeenCalledWith(
         "/api/plan",
         expect.objectContaining({
           method: "POST",
-          body: expect.stringContaining("draw a rocket")
+          body: expect.stringContaining("draw a robot")
         })
       );
     });
-    await waitFor(() => expect(document.querySelector('svg ellipse[fill="#94a3b8"]')).toBeInTheDocument());
-    expect(screen.getByLabelText("最近一次 Action JSON")).toHaveTextContent('"id": "rocket-body"');
+    await waitFor(() => expect(document.querySelector('svg rect[fill="#94a3b8"]')).toBeInTheDocument());
+    expect(screen.getByLabelText("最近一次 Action JSON")).toHaveTextContent('"id": "robot-body"');
+  });
+
+  it("shows a loading state while the api planner is thinking", async () => {
+    const user = userEvent.setup();
+    let resolvePlan: (value: Response) => void = () => {};
+    const fetcher = vi.fn(
+      () =>
+        new Promise<Response>((resolve) => {
+          resolvePlan = resolve;
+        })
+    );
+    vi.stubGlobal("fetch", fetcher);
+    render(<App />);
+
+    await user.type(screen.getByLabelText("文字模拟语音"), "draw a robot{Enter}");
+
+    expect(screen.getByText("模型思考中")).toBeInTheDocument();
+    expect(screen.getByLabelText("文字模拟语音")).toBeDisabled();
+    expect(screen.getByLabelText("模型思考中")).toBeInTheDocument();
+
+    resolvePlan({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        source: "llm",
+        plan: {
+          type: "plan",
+          title: "Draw a robot",
+          steps: [
+            {
+              id: "robot-body",
+              title: "Draw robot body",
+              dependsOn: [],
+              action: {
+                type: "create",
+                shape: "rect",
+                count: 1,
+                props: { color: "#94a3b8", size: "large", position: { x: 500, y: 260 } }
+              }
+            }
+          ]
+        }
+      })
+    } as Response);
+
+    await waitFor(() => expect(screen.queryByText("模型思考中")).not.toBeInTheDocument());
+    await waitFor(() => expect(document.querySelector('svg rect[fill="#94a3b8"]')).toBeInTheDocument());
+  });
+
+  it("uses typed or transcribed text to generate an image in image mode", async () => {
+    const user = userEvent.setup();
+    const fetcher = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        ok: true,
+        source: "image-model",
+        prompt: "生成一张苹果简笔画",
+        imageUrl: "https://example.test/apple.png"
+      })
+    });
+    vi.stubGlobal("fetch", fetcher);
+    render(<App />);
+
+    await user.click(screen.getByRole("button", { name: "AI 生图" }));
+    await user.type(screen.getByLabelText("文字模拟语音"), "生成一张苹果简笔画{Enter}");
+
+    await waitFor(() => {
+      expect(fetcher).toHaveBeenCalledWith(
+        "/api/image",
+        expect.objectContaining({
+          method: "POST",
+          body: expect.stringContaining("生成一张苹果简笔画")
+        })
+      );
+    });
+    await waitFor(() => expect(screen.getByAltText("生成一张苹果简笔画")).toHaveAttribute("src", "https://example.test/apple.png"));
+    expect(screen.getByLabelText("最近一次生图 Result JSON")).toHaveTextContent('"imageUrl": "https://example.test/apple.png"');
+  });
+
+  it("saves by voice and reuses the local template for later commands", async () => {
+    const user = userEvent.setup();
+    const fetcher = vi.fn();
+    vi.stubGlobal("fetch", fetcher);
+    render(<App />);
+
+    await user.type(screen.getByLabelText("文字模拟语音"), "画一个红色圆{Enter}");
+    await user.type(screen.getByLabelText("文字模拟语音"), "保存此模板{Enter}");
+    await user.click(screen.getByRole("button", { name: "清空" }));
+    await user.type(screen.getByLabelText("文字模拟语音"), "画一个红色圆{Enter}");
+
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(document.querySelectorAll('svg circle[fill="#ef4444"]')).toHaveLength(1);
+    expect(screen.getByText("已保存模板：画一个红色圆")).toBeInTheDocument();
   });
 });
